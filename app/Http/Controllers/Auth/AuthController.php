@@ -1,5 +1,4 @@
 <?php
-// app/Http/Controllers/Auth/AuthController.php
 
 namespace App\Http\Controllers\Auth;
 
@@ -11,24 +10,18 @@ use Illuminate\Support\Facades\Validator;
 
 class AuthController extends Controller
 {
-    /**
-     * Hiển thị form đăng nhập/đăng ký
-     */
     public function showLoginRegisterForm()
     {
         return view('auth.login-register');
     }
 
-    /**
-     * Xử lý đăng ký người dùng
-     */
     public function register(Request $request)
     {
         $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:100',
             'email' => 'required|string|email|max:255|unique:users,Email',
             'phone' => 'required|string|size:10|regex:/^[0-9]+$/|unique:users,Phone',
-            'password' => 'required|string|min:6',
+            'password' => 'required|string|min:8', // Updated to min:8
         ], [
             'name.required' => 'Vui lòng nhập họ tên',
             'name.max' => 'Họ tên không được vượt quá 100 ký tự',
@@ -40,7 +33,7 @@ class AuthController extends Controller
             'phone.regex' => 'Số điện thoại chỉ được chứa số',
             'phone.unique' => 'Số điện thoại đã được sử dụng',
             'password.required' => 'Vui lòng nhập mật khẩu',
-            'password.min' => 'Mật khẩu phải có ít nhất 6 ký tự',
+            'password.min' => 'Mật khẩu phải có ít nhất 8 ký tự',
         ]);
 
         if ($validator->fails()) {
@@ -61,7 +54,7 @@ class AuthController extends Controller
                 'FullName' => $request->name,
                 'Email' => $request->email,
                 'Phone' => $request->phone,
-                'password' => $request->password, // Sẽ được hash bởi setPasswordAttribute
+                'password' => $request->password,
                 'UserType' => 'Regular',
             ]);
         } catch (\Exception $e) {
@@ -90,9 +83,6 @@ class AuthController extends Controller
             ->with('active_tab', 'login');
     }
 
-    /**
-     * Xử lý đăng nhập
-     */
     public function login(Request $request)
     {
         $validator = Validator::make($request->all(), [
@@ -109,20 +99,6 @@ class AuthController extends Controller
                 ->withInput();
         }
 
-        // Xử lý đăng nhập admin đặc biệt
-        if ($request->login_input === 'admin' && $request->password === 'admin') {
-            session([
-                'currentUser' => [
-                    'name' => 'Admin',
-                    'email' => 'admin',
-                    'phone' => null,
-                    'userType' => 'Admin'
-                ]
-            ]);
-            return redirect()->route('admin.dashboard');
-        }
-
-        // Kiểm tra đăng nhập bằng email hoặc số điện thoại
         $loginField = filter_var($request->login_input, FILTER_VALIDATE_EMAIL) ? 'Email' : 'Phone';
         
         $credentials = [
@@ -134,16 +110,6 @@ class AuthController extends Controller
             $request->session()->regenerate();
             
             $user = Auth::user();
-            // Lưu thông tin user vào session (để tương thích với code cũ)
-            session([
-                'currentUser' => [
-                    'name' => $user->FullName,
-                    'email' => $user->Email,
-                    'phone' => $user->Phone,
-                    'userType' => $user->UserType
-                ]
-            ]);
-
             if ($user->UserType === 'Admin') {
                 return redirect()->route('admin.dashboard');
             }
@@ -157,9 +123,6 @@ class AuthController extends Controller
             ->withInput();
     }
 
-    /**
-     * Đăng xuất
-     */
     public function logout(Request $request)
     {
         Auth::logout();

@@ -11,13 +11,15 @@ use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\OrderController;
 use App\Http\Controllers\Admin\UserController;
-use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\DashboardController;
 
 // Auth routes
 Route::get('/login-register', [AuthController::class, 'showLoginRegisterForm'])->name('login-register');
 Route::post('/register', [AuthController::class, 'register'])->name('register');
 Route::post('/login', [AuthController::class, 'login'])->name('login');
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+// Tạm thời để get logout để test
+Route::get('/logout', [AuthController::class, 'logout'])->name('logout');
 
 // Các route yêu cầu đăng nhập
 Route::middleware(['auth'])->group(function () {
@@ -26,11 +28,18 @@ Route::middleware(['auth'])->group(function () {
     })->name('home');
 });
 
-Route::get('/admin', function () {
-    return view('admin.admin');
-});
+// Route::get('/admin', function () {
+//     return view('admin.layouts.app');
+// });
 
-Route::prefix('admin')->middleware(['auth'])->group(function () {
+
+
+// Admin
+Route::prefix('admin')->middleware(['auth', 'admin'])->group(function () {
+    Route::get('/', function () {
+        return redirect()->route('admin.dashboard');
+    })->name('admin');
+
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('admin.dashboard');
 
     Route::resource('categories', CategoryController::class)->names('admin.categories');
@@ -39,27 +48,8 @@ Route::prefix('admin')->middleware(['auth'])->group(function () {
     Route::resource('users', UserController::class)->names('admin.users');
 });
 
-require __DIR__.'/auth.php';
+// require __DIR__.'/auth.php';
 
-
-// // Các route dành cho Admin
-// Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
-//     // Dashboard
-//     Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
-//     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard.index');
-    
-//     // Categories
-//     Route::resource('categories', CategoryController::class);
-    
-//     // Products
-//     Route::resource('products', ProductController::class);
-    
-//     // Orders
-//     Route::resource('orders', OrderController::class);
-    
-//     // Users
-//     Route::resource('users', UserController::class);
-// });
 
 // Password Reset Routes
 Route::get('/forgot-password', [ForgotPasswordController::class, 'showForgotPasswordForm'])

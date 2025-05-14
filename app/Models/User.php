@@ -1,36 +1,19 @@
 <?php
-// app/Models/User.php
 
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-use Laravel\Sanctum\HasApiTokens;
+use Illuminate\Contracts\Auth\MustVerifyEmail;
 
-class User extends Authenticatable
+class User extends Authenticatable implements MustVerifyEmail
 {
-    use HasFactory;
+    use HasFactory, Notifiable;
 
-    /**
-     * Tên bảng trong cơ sở dữ liệu
-     *
-     * @var string
-     */
     protected $table = 'users';
-
-    /**
-     * Khóa chính của bảng
-     *
-     * @var string
-     */
     protected $primaryKey = 'UserID';
 
-    /**
-     * Các thuộc tính có thể gán hàng loạt
-     *
-     * @var array<int, string>
-     */
     protected $fillable = [
         'FullName',
         'Email',
@@ -41,61 +24,39 @@ class User extends Authenticatable
         'CreatedAt'
     ];
 
-    /**
-     * Các thuộc tính nên ẩn
-     *
-     * @var array<int, string>
-     */
     protected $hidden = [
-        'PasswordHash',
+        'password',
         'remember_token',
     ];
 
-    /**
-     * Chỉ định cột mật khẩu
-     *
-     * @var string
-     */
-    protected $password = 'PasswordHash';
+    public function getEmailForPasswordReset()
+    {
+        return $this->Email;
+    }
 
-    /**
-     * Mutator để hash mật khẩu
-     */
     public function setPasswordAttribute($value)
     {
         if ($value) {
-            \Log::info('setPasswordAttribute called with value: ' . $value);
-            $this->attributes['PasswordHash'] = bcrypt($value);
+            \Log::info('setPasswordAttribute called for user ID: ' . ($this->UserID ?? 'new'), ['value' => '[hidden]']);
+            $this->attributes['password'] = bcrypt($value);
         }
     }
 
-    /**
-     * Lấy giá trị cột mật khẩu
-     */
     public function getAuthPassword()
     {
-        return $this->PasswordHash;
+        return $this->password;
     }
 
-    /**
-     * Quan hệ với Orders
-     */
     public function orders()
     {
         return $this->hasMany(Order::class, 'UserID', 'UserID');
     }
 
-    /**
-     * Quan hệ với Cart
-     */
     public function cart()
     {
         return $this->hasMany(Cart::class, 'UserID', 'UserID');
     }
 
-    /**
-     * Quan hệ với UserCoupons
-     */
     public function userCoupons()
     {
         return $this->hasMany(UserCoupon::class, 'UserID', 'UserID');

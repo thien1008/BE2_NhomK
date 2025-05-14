@@ -3,73 +3,70 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
-use App\Models\User;
 use Illuminate\Http\Request;
-use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Hash;
+use App\Models\User;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Carbon;
-use Illuminate\Validation\Rules\Password;
 
 class ResetPasswordController extends Controller
 {
     /**
-     * Display the password reset view.
+     * Hiển thị form đặt lại mật khẩu
      */
-    public function showResetForm(Request $request, string $token)
+    public function showResetForm(Request $request, $token = null)
     {
-        $resetRecord = DB::table('password_reset_tokens')
-                        ->where('token', $token)
-                        ->first();
-                        
-        if (!$resetRecord || Carbon::parse($resetRecord->expires_at)->isPast()) {
-            return redirect()->route('password.request')
-                ->with('error', 'Link đặt lại mật khẩu không hợp lệ hoặc đã hết hạn.');
-        }
-
-        return view('auth.reset-password', ['token' => $token, 'email' => $resetRecord->email]);
+        return view('auth.reset-password', ['token' => $token, 'email' => $request->email]);
     }
 
     /**
-     * Reset the user's password.
+     * Xử lý đặt lại mật khẩu
      */
     public function resetPassword(Request $request)
     {
-        $request->validate([
+        $validator = Validator::make($request->all(), [
             'token' => 'required',
-            'email' => 'required|email',
-            'new_password' => ['required', 'confirmed', Password::min(8)],
+            'email' => 'required|email|exists:users,Email',
+            'password' => 'required|string|min:8|confirmed',
+        ], [
+            'email.required' => 'Vui lòng nhập email.',
+            'email.email' => 'Email không đúng định dạng.',
+            'email.exists' => 'Email không tồn tại trong hệ thống.',
+            'password.required' => 'Vui lòng nhập mật khẩu.',
+            'password.min' => 'Mật khẩu phải có ít nhất 8 ký tự.',
+            'password.confirmed' => 'Mật khẩu xác nhận không khớp.',
         ]);
 
-        $resetRecord = DB::table('password_reset_tokens')
-                        ->where('token', $request->token)
-                        ->where('email', $request->email)
-                        ->first();
-
-        if (!$resetRecord) {
-            return back()->with('error', 'Token không hợp lệ.');
+        if ($validator->fails()) {
+            return redirect()->back()
+                ->withErrors($validator)
+                ->withInput();
         }
 
-        if (Carbon::parse($resetRecord->expires_at)->isPast()) {
-            return redirect()->route('password.request')
-                ->with('error', 'Token đã hết hạn. Vui lòng yêu cầu lại.');
+        $email = $request->input('email');
+        $token = $request->input('token');
+        $password = $request->input('password');
+
+        // Kiểm tra token
+        $resetToken = DB::table('password_reset_tokens')->where('email', $email)->first();
+
+        if (!$resetToken || !Hash::check($token, $resetToken->token)) {
+            return back()->withErrors(['email' => 'Token không hợp lệ hoặc đã hết hạn.']);
         }
 
-        $user = User::where('email', $request->email)->first();
-        
-        if (!$user) {
-            return redirect()->route('password.request')
-                ->with('error', 'Không tìm thấy người dùng với email này.');
+        // Cập nhật mật khẩu
+        $user = User::where('Email', $email)->first();
+        if ($user) {
+            // Vì trong model User đã có mutator cho password, nên không cần phải mã hóa lại
+            $user->password = $password;
+            $user->save();
+
+            // Xóa token sau khi đặt lại mật khẩu
+            DB::table('password_reset_tokens')->where('email', $email)->delete();
+
+            return redirect()->route('login-register')->with('status', 'Mật khẩu đã được đặt lại thành công!');
         }
 
-        // Update password
-        $user->password = Hash::make($request->new_password);
-        $user->save();
-
-        // Delete the used token
-        DB::table('password_reset_tokens')->where('token', $request->token)->delete();
-
-        return redirect()->route('login')
-            ->with('status', 'Mật khẩu đã được đặt lại thành công. Vui lòng đăng nhập bằng mật khẩu mới.');
+        return back()->withErrors(['email' => 'Không thể đặt lại mật khẩu.']);
     }
 }

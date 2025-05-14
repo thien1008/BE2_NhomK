@@ -1,105 +1,146 @@
-@extends('layouts.admin')
+@extends('admin.layouts.app')
+
+@section('title', 'Tổng quan')
 
 @section('content')
-    <div class="container">
-        <h1>Tổng quan</h1>
-        
-        <div class="stats-container">
-            <div class="stat-card">
-                <div class="stat-icon">
-                    <i class="fas fa-box"></i>
-                </div>
-                <div class="stat-content">
-                    <div class="stat-value">{{ $stats['total_products'] }}</div>
-                    <div class="stat-label">Sản phẩm</div>
-                </div>
-            </div>
-            
-            <div class="stat-card">
-                <div class="stat-icon">
-                    <i class="fas fa-shopping-cart"></i>
-                </div>
-                <div class="stat-content">
-                    <div class="stat-value">{{ $stats['total_orders'] }}</div>
-                    <div class="stat-label">Đơn hàng</div>
-                </div>
-            </div>
-            
-            <div class="stat-card">
-                <div class="stat-icon">
-                    <i class="fas fa-list"></i>
-                </div>
-                <div class="stat-content">
-                    <div class="stat-value">{{ $stats['total_categories'] }}</div>
-                    <div class="stat-label">Danh mục</div>
-                </div>
-            </div>
-            
-            <div class="stat-card">
-                <div class="stat-icon">
-                    <i class="fas fa-users"></i>
-                </div>
-                <div class="stat-content">
-                    <div class="stat-value">{{ $stats['total_users'] }}</div>
-                    <div class="stat-label">Người dùng</div>
+<div class="container-fluid">
+    <h2 class="page-title">Tổng quan</h2>
+
+    <!-- Summary Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card text-white bg-primary">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <i class="bi bi-tags-fill" style="font-size: 2rem; margin-right: 10px;"></i>
+                        <div>
+                            <h5 class="card-title">Danh mục</h5>
+                            <h3 class="card-text">{{ $stats['categories'] }}</h3>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
-        
-        <!-- Phần thống kê và biểu đồ khác có thể được thêm vào đây -->
+        <div class="col-md-3">
+            <div class="card text-white bg-success">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <i class="bi bi-box-seam-fill" style="font-size: 2rem; margin-right: 10px;"></i>
+                        <div>
+                            <h5 class="card-title">Sản phẩm</h5>
+                            <h3 class="card-text">{{ $stats['products'] }}</h3>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-white bg-warning">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <i class="bi bi-cart-fill" style="font-size: 2rem; margin-right: 10px;"></i>
+                        <div>
+                            <h5 class="card-title">Đơn hàng</h5>
+                            <h3 class="card-text">{{ $stats['orders'] }}</h3>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-white bg-info">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <i class="bi bi-people-fill" style="font-size: 2rem; margin-right: 10px;"></i>
+                        <div>
+                            <h5 class="card-title">Người dùng</h5>
+                            <h3 class="card-text">{{ $stats['users'] }}</h3>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
+
+    <!-- Recent Orders -->
+    <div class="card">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0">Đơn hàng gần đây</h5>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-striped table-hover align-middle">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Khách hàng</th>
+                            <th>Tổng tiền</th>
+                            <th>Trạng thái</th>
+                            <th>Ngày tạo</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse ($recentOrders as $order)
+                        <tr>
+                            <td>{{ $order->OrderID }}</td>
+                            <td>{{ $order->user->FullName }}</td>
+                            <td class="price">{{ number_format($order->TotalPrice, 0, ',', '.') }} đ</td>
+                            <td>
+                                @php
+                                    $statusClass = match ($order->Status) {
+                                        'Pending' => 'status-pending bg-warning',
+                                        'Completed' => 'status-completed bg-success',
+                                        'Cancelled' => 'status-cancelled bg-danger',
+                                        default => '',
+                                    };
+                                @endphp
+                                <span class="badge {{ $statusClass }} status">{{ $order->Status }}</span>
+                            </td>
+                            <td>{{ $order->CreatedAt }}</td>
+                        </tr>
+                        @empty
+                        <tr>
+                            <td colspan="5" class="text-center">Không có đơn hàng nào gần đây.</td>
+                        </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
 @endsection
 
-@push('styles')
+@section('scripts')
 <style>
-    .stats-container {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-        gap: 20px;
-        margin-top: 20px;
+    .page-title {
+        color: #2c3e50;
+        margin-bottom: 20px;
+        padding-bottom: 10px;
+        border-bottom: 2px solid #e9ecef;
     }
-    
-    .stat-card {
-        display: flex;
-        align-items: center;
-        background: white;
-        border-radius: 8px;
-        padding: 20px;
-        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    .card {
+        margin-bottom: 20px;
+        box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
     }
-    
-    .stat-icon {
-        font-size: 24px;
-        color: #3498db;
-        margin-right: 20px;
-        background: #ebf5ff;
-        width: 50px;
-        height: 50px;
-        border-radius: 10px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
+    .card-body {
+        padding: 1.5rem;
     }
-    
-    .stat-content {
-        flex-grow: 1;
-    }
-    
-    .stat-value {
-        font-size: 24px;
+    .price {
         font-weight: bold;
-        margin-bottom: 5px;
+        color: #e74c3c;
     }
-    
-    .stat-label {
-        color: #7f8c8d;
-        font-size: 14px;
+    .status {
+        font-weight: bold;
+    }
+    .status-pending {
+        color: #f39c12;
+    }
+    .status-completed {
+        color: #27ae60;
+    }
+    .status-cancelled {
+        color: #e74c3c;
     }
 </style>
-@endpush
-
-@push('scripts')
-<script>
-    // Script cho biểu đồ hoặc tính năng tương tác khác có thể thêm vào đây
-</script>
-@endpush
+@endsection

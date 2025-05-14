@@ -16,7 +16,7 @@ return new class extends Migration
             $table->id('UserID');
             $table->string('FullName', 100);
             $table->string('Email', 255)->unique();
-            $table->string('PasswordHash', 255);
+            $table->string('password', 255); // Changed from PasswordHash
             $table->string('Phone', 15)->unique()->nullable();
             $table->enum('UserType', ['Regular', 'VIP', 'Admin'])->default('Regular');
             $table->string('GoogleID', 255)->unique()->nullable();

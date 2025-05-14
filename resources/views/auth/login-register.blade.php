@@ -42,7 +42,8 @@
 </head>
 
 <body>
-    <div class="container" id="container" @if(session('active_tab') === 'register') class="right-panel-active" @endif>
+    <div id="container" class="container {{ session('active_tab') === 'register' ? 'right-panel-active' : '' }}">
+
         <!-- Register Form -->
         <div class="form-container register-container">
             <form method="POST" action="{{ route('register') }}" onsubmit="return validateRegister()">
