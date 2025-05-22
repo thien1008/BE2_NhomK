@@ -70,9 +70,8 @@ body {
 
 /* Improved Header */
 header {
-  position: absolute;
-  top: 56px;
-  /* Adjusted to account for hotline bar height (8px padding top + 8px padding bottom + 40px content height) */
+  position: fixed;
+  top: 30px;
   width: 100%;
   padding: 1rem 6rem;
   z-index: 1000;
@@ -87,7 +86,6 @@ header {
 .header-fixed {
   position: fixed;
   top: 56px;
-  /* Adjusted to account for hotline bar height */
   animation: slideDown 0.5s ease;
 }
 
@@ -217,20 +215,26 @@ header nav button:hover::after {
   height: 100%;
 }
 
-/* Category Dropdown */
+/* Updated Category Dropdown */
 .dropdown-menu {
-  position: absolute;
-  top: calc(100% + 10px);
+  position: fixed;
+  top: calc(5px + 72px);
+  left: 0;
+  width: 100vw;
   background: var(--background);
-  border-radius: var(--radius);
+  border-radius: 0 0 var(--radius) var(--radius);
   box-shadow: var(--shadow);
-  min-width: 500px;
   z-index: 5020;
   opacity: 0;
   visibility: hidden;
-  transform: translateY(10px);
-  transition: all 0.3s ease;
-  border: 1px solid var(--border);
+  transform: translateY(-20px);
+  transition: opacity 0.3s ease, transform 0.3s ease;
+  border-left: 1px solid var(--border);
+  border-right: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  border-top: 0;
+  /* Xóa viền trên */
+  padding: 10px 0 30px 0;
 }
 
 .dropdown-menu.active {
@@ -244,8 +248,8 @@ header nav button:hover::after {
   padding: 12px 15px;
   text-decoration: none;
   color: var(--text-primary);
-  font-size: 16x;
-  transition: all 0.2s ease;
+  font-size: 16px;
+  transition: all 0.2s ease, font-weight 0.2s ease, transform 0.2s ease;
   border-bottom: 1px solid var(--border);
 }
 
@@ -254,8 +258,18 @@ header nav button:hover::after {
 }
 
 .dropdown-menu a:hover {
-  background: var(--background-alt);
+  background: transparent;
   color: var(--primary);
+  font-weight: 700;
+  transform: scale(1.05);
+  transform-origin: left;
+}
+
+/* Dropdown container for better content alignment */
+.dropdown-menu-container {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 15px;
 }
 
 /* Enhanced Dropdown Styles */
@@ -781,7 +795,6 @@ header nav button:hover::after {
 .hero-section {
   position: relative;
   padding: 176px 0 60px;
-  /* Adjusted top padding to account for hotline bar (56px) + original header top (40px) + header padding */
 }
 
 .hero-banner {
@@ -1517,11 +1530,9 @@ header nav button:hover::after {
   .header-mobile-nav.active {
     position: fixed;
     top: 56px;
-    /* Adjusted to account for hotline bar height */
     left: 0;
     width: 100%;
     height: calc(100% - 56px);
-    /* Adjust height to account for hotline bar */
     background: var(--background);
     z-index: 9999;
     transform: translateX(0);
@@ -1717,7 +1728,6 @@ header nav button:hover::after {
   header {
     padding: 1rem 15px;
     top: 56px;
-    /* Adjusted for hotline bar */
   }
 
   .hamburger-menu {
@@ -1735,11 +1745,9 @@ header nav button:hover::after {
   header.menu-active nav {
     position: fixed;
     top: 56px;
-    /* Adjusted for hotline bar */
     left: 0;
     width: 100%;
     height: calc(100vh - 56px);
-    /* Adjusted for hotline bar */
     background: var(--background);
     display: flex;
     flex-direction: column;
@@ -2149,9 +2157,6 @@ header nav button:hover::after {
 .dropdown-search .search-result-name strong {
   font-weight: 700;
   background-color: #ffff00;
-  /* Yellow background */
   color: #000;
-  /* Black text for contrast */
   padding: 0 2px;
-  /* Slight padding for better appearance */
 }

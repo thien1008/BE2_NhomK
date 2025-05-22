@@ -1,4 +1,33 @@
 document.addEventListener('DOMContentLoaded', () => {
+    // Xử lý mouseleave trên toàn bộ header
+    const header = document.querySelector('header');
+    header.addEventListener('mouseleave', (e) => {
+        const dropdowns = document.querySelectorAll('.dropdown-menu');
+        let isMouseInDropdown = false;
+
+        // Kiểm tra xem chuột có đang ở trong một dropdown hay không
+        dropdowns.forEach(dropdown => {
+            if (dropdown.contains(e.relatedTarget)) {
+                isMouseInDropdown = true;
+            }
+        });
+
+        // Chỉ đóng các dropdown nếu chuột không ở trong dropdown
+        if (!isMouseInDropdown) {
+            closeAllDropdowns();
+        }
+    });
+
+    // Xử lý mouseleave trên các dropdown để đóng khi chuột rời khỏi dropdown
+    document.querySelectorAll('.dropdown-menu').forEach(dropdown => {
+        dropdown.addEventListener('mouseleave', (e) => {
+            // Đóng dropdown nếu chuột không di chuyển vào header hoặc một dropdown khác
+            if (!header.contains(e.relatedTarget) && !document.querySelector('.dropdown-menu').contains(e.relatedTarget)) {
+                toggleDropdown(dropdown, false);
+            }
+        });
+    });
+
     // Hàm tiện ích: Định dạng tiền tệ VND
     const formatVND = num => num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') + ' ₫';
 
@@ -112,26 +141,28 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     // Xử lý dropdown
+    // Xử lý dropdown
     const setupDropdown = (trigger, dropdown, isMobileClick = false) => {
         const handleToggle = (e, forceState) => {
             const isMobile = window.innerWidth <= 768;
-            if (isMobile && e.type !== 'mouseenter' && isMobileClick) {
+            if (isMobile && e.type === 'click' && isMobileClick) {
                 e.preventDefault();
                 closeAllDropdowns();
                 toggleDropdown(dropdown, forceState ?? !dropdown.classList.contains('active'));
             } else if (!isMobile) {
-                closeAllDropdowns(dropdown);
-                toggleDropdown(dropdown, e.type === 'mouseenter');
+                if (e.type === 'mouseenter') {
+                    closeAllDropdowns(dropdown);
+                    toggleDropdown(dropdown, true);
+                }
+                // Không xử lý mouseleave ở đây nữa
             }
         };
 
         trigger.addEventListener('mouseenter', handleToggle);
-        trigger.addEventListener('mouseleave', handleToggle);
         trigger.addEventListener('click', handleToggle);
         trigger.addEventListener('keydown', e => (e.key === 'Enter' || e.key === ' ') && handleToggle(e));
     };
 
-    // Dropdown danh mục sản phẩm
     document.querySelectorAll('nav a.nav-link').forEach(item => {
         const category = item.textContent.trim().toLowerCase();
         if (!categoriesFromDB[category]) return;
@@ -142,12 +173,16 @@ document.addEventListener('DOMContentLoaded', () => {
         item.setAttribute('aria-controls', dropdown.id);
         item.setAttribute('aria-expanded', 'false');
 
+        const container = document.createElement('div');
+        container.classList.add('dropdown-menu-container');
+
         categoriesFromDB[category].forEach(product => {
             const link = document.createElement('a');
-            link.href = `/product/${product.ProductID}`; // Updated to correct route
+            link.href = `/product/${product.ProductID}`;
             link.textContent = product.ProductName;
-            dropdown.appendChild(link);
+            container.appendChild(link);
         });
+        dropdown.appendChild(container);
         item.parentElement.appendChild(dropdown);
         setupDropdown(item, dropdown, true);
     });

@@ -11,7 +11,7 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <!-- Preload critical assets -->
-    <div class="hero-section scroll-reveal" style="margin-top: -150px;">
+    <div class="hero-section scroll-reveal" style="margin-top: -230px;">
         <link rel="preload" href="{{ asset('../img/banner1.avif') }}" as="image">
     </div>
 
