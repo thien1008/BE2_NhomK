@@ -10,7 +10,10 @@ export default defineConfig({
                 'resources/js/app.js',
                 'resources/css/login-register.css',
                 'resources/css/styles-home.css',
+                'resources/css/styles-ctsp.css',
                 'resources/js/scripts-home.js',
+                'resources/js/scripts-ctsp.js',
+                'resources/js/scripts-cart.js',
                 'resources/js/cart-shared.js'
             ],
             refresh: true,

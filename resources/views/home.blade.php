@@ -1,16 +1,24 @@
 @extends('layouts.app')
 
 @push('head')
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <!-- Font Awesome and Google Fonts with display=swap for better performance -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css"
         crossorigin="anonymous" referrerpolicy="no-referrer" />
     <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@400;500;600&family=Roboto:wght@400;500;700&display=swap"
         rel="stylesheet">
 
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
     <!-- Preload critical assets -->
-    <div class="hero-section scroll-reveal">
+    <div class="hero-section scroll-reveal" style="margin-top: -150px;">
         <link rel="preload" href="{{ asset('../img/banner1.avif') }}" as="image">
     </div>
+
+    <script>
+        window.categoriesFromDB = @json($categories);
+        window.isLoggedIn = @json(Auth::check());
+    </script>
 
     <!-- Vite Assets -->
     @vite([
@@ -91,39 +99,41 @@
             </div>
 
             <!-- Shopping cart -->
-            <div class="cart-container" aria-label="Shopping cart" role="button" tabindex="0" aria-controls="cart-dropdown"
-                aria-expanded="false">
-                <div class="cart-icon">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24">
-                        <path
-                            d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49A1.003 1.003 0 0 0 20 4H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z" />
-                    </svg>
+            @auth
+                <div class="cart-container" aria-label="Shopping cart" role="button" tabindex="0" aria-controls="cart-dropdown"
+                    aria-expanded="false">
+                    <div class="cart-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24">
+                            <path
+                                d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49A1.003 1.003 0 0 0 20 4H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z" />
+                        </svg>
+                    </div>
+                    <span class="cart-count" aria-label="{{ $cartCount }} items in cart">{{ $cartCount }}</span>
+                    <div class="cart-dropdown" id="cart-dropdown">
+                        <div class="cart-dropdown-header">
+                            <h3>Giỏ Hàng</h3>
+                            <span class="cart-dropdown-close" aria-label="Close">×</span>
+                        </div>
+                        <div class="cart-dropdown-body" id="cart-items">
+                            <div class="cart-empty" id="cart-empty" style="display: {{ $cartCount > 0 ? 'none' : 'block' }};">
+                                <i class="fas fa-shopping-cart fa-3x"></i>
+                                <p>Giỏ hàng của bạn đang trống.</p>
+                                <p class="cart-empty-hint">Hãy thêm sản phẩm vào giỏ hàng để tiếp tục mua sắm.</p>
+                            </div>
+                        </div>
+                        <div class="cart-dropdown-footer">
+                            <div class="cart-total">
+                                <span>Tổng cộng:</span>
+                                <span id="cart-total-price">0₫</span>
+                            </div>
+                            <div class="cart-dropdown-buttons">
+                                <a href="cart.php" class="cart-dropdown-button view-cart-btn">Xem giỏ hàng</a>
+                                <a href="checkout.php" class="cart-dropdown-button checkout-btn">Thanh toán</a>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <span class="cart-count" aria-label="{{ $cartCount }} items in cart">{{ $cartCount }}</span>
-                <div class="cart-dropdown" id="cart-dropdown">
-                    <div class="cart-dropdown-header">
-                        <h3>Giỏ Hàng</h3>
-                        <span class="cart-dropdown-close" aria-label="Close">×</span>
-                    </div>
-                    <div class="cart-dropdown-body" id="cart-items">
-                        <div class="cart-empty" id="cart-empty">
-                            <i class="fas fa-shopping-cart fa-3x"></i>
-                            <p>Giỏ hàng của bạn đang trống.</p>
-                            <p class="cart-empty-hint">Hãy thêm sản phẩm vào giỏ hàng để tiếp tục mua sắm.</p>
-                        </div>
-                    </div>
-                    <div class="cart-dropdown-footer">
-                        <div class="cart-total">
-                            <span>Tổng cộng:</span>
-                            <span id="cart-total-price">0₫</span>
-                        </div>
-                        <div class="cart-dropdown-buttons">
-                            <a href="cart.php" class="cart-dropdown-button view-cart-btn">Xem giỏ hàng</a>
-                            <a href="checkout.php" class="cart-dropdown-button checkout-btn">Thanh toán</a>
-                        </div>
-                    </div>
-                </div>
-            </div>
+            @endauth
 
             <!-- User account -->
             @guest
@@ -152,31 +162,6 @@
         </div>
     @endif
 
-    <!-- Cart modal -->
-    <div class="cart-modal" role="dialog" aria-labelledby="cart-modal-title">
-        <div class="cart-modal-content">
-            <div class="cart-modal-header">
-                <h2 id="cart-modal-title">Giỏ Hàng</h2>
-                <span class="cart-modal-close" aria-label="Close">&times;</span>
-            </div>
-            <div class="cart-modal-body">
-                <div class="cart-empty" id="cart-empty">
-                    <i class="fas fa-shopping-cart fa-3x"></i>
-                    <p>Giỏ hàng của bạn đang trống.</p>
-                    <p class="cart-empty-hint">Hãy thêm sản phẩm vào giỏ hàng để tiếp tục mua sắm.</p>
-                </div>
-                <div class="cart-items" id="cart-items"></div>
-            </div>
-            <div class="cart-modal-footer">
-                <div class="cart-total">
-                    <span>Tổng cộng:</span>
-                    <span id="cart-total-price">0₫</span>
-                </div>
-                <button class="cart-checkout-btn" disabled>Thanh Toán</button>
-            </div>
-        </div>
-    </div>
-
     <!-- Hero banner -->
     <section class="hero-section">
         <div class="container">
@@ -191,6 +176,7 @@
         </div>
     </section>
 
+    <!-- Products section -->
     <!-- Products section -->
     <section class="products-section scroll-reveal">
         <div class="promo-container">
@@ -209,54 +195,58 @@
                 </button>
             </div>
             <div class="products-slider" role="list">
-                @if($products->isNotEmpty())
-                    @foreach($products as $product)
-                        <div class="product-card" role="listitem">
-                            <div class="product-image">
-                                <img src="{{ asset('images/' . $product->ImageURL) }}" alt="{{ e($product->ProductName) }}"
-                                    loading="lazy" width="200" height="200">
-                                @if($product->DiscountPercentage)
-                                    <span class="product-badge">Sale!</span>
-                                @endif
-                                <div class="product-actions">
-                                    <button class="product-action-btn quick-view" data-id="{{ $product->id }}"
-                                        aria-label="Quick view">
-                                        <i class="fas fa-eye"></i>
-                                    </button>
-                                    <button class="product-action-btn add-to-wishlist" data-id="{{ $product->id }}"
-                                        aria-label="Add to wishlist">
-                                        <i class="far fa-heart"></i>
-                                    </button>
-                                </div>
-                            </div>
-                            <div class="product-details">
-                                <div class="product-title">{{ e($product->ProductName) }}</div>
-                                <div class="product-rating">
-                                    <i class="fas fa-star"></i>
-                                    <i class="fas fa-star"></i>
-                                    <i class="fas fa-star"></i>
-                                    <i class="fas fa-star"></i>
-                                    <i class="fas fa-star-half-alt"></i>
-                                </div>
-                                <div class="price-container">
-                                    <span class="current-price">{{ number_format($product->CurrentPrice, 0) }}₫</span>
-                                    @if($product->DiscountPercentage)
-                                        <div>
-                                            <span class="original-price">{{ number_format($product->Price, 0) }}₫</span>
-                                            <span class="discount-badge">-{{ number_format($product->DiscountPercentage, 0) }}%</span>
-                                        </div>
-                                    @endif
-                                </div>
-                                <button class="add-to-cart" data-id="{{ $product->id }}" data-name="{{ e($product->ProductName) }}"
-                                    data-price="{{ $product->CurrentPrice }}">
-                                    <i class="fas fa-shopping-cart"></i>
-                                    <span>THÊM VÀO GIỎ</span>
-                                </button>
-                            </div>
-                        </div>
-                    @endforeach
-                @else
+                @if($products->isEmpty())
                     <p class="no-products">Không có sản phẩm nào để hiển thị.</p>
+                @else
+                    @foreach($products as $product)
+                        @if($product->ProductID && \App\Models\Product::where('ProductID', $product->ProductID)->exists())
+                            <a href="/product/{{ $product->ProductID }}" class="product-card" role="listitem"
+                                data-product-id="{{ $product->ProductID }}">
+                                <div class="product-image">
+                                    <img src="{{ asset('images/' . $product->ImageURL) }}" alt="{{ e($product->ProductName) }}"
+                                        loading="lazy" width="200" height="200">
+                                    @if($product->DiscountPercentage)
+                                        <span class="product-badge">Sale!</span>
+                                    @endif
+                                    <div class="product-actions">
+                                        <button class="product-action-btn quick-view" data-product-id="{{ $product->ProductID }}"
+                                            aria-label="Quick view">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                        <button class="product-action-btn add-to-wishlist" data-product-id="{{ $product->ProductID }}"
+                                            aria-label="Add to wishlist">
+                                            <i class="far fa-heart"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="product-details">
+                                    <div class="product-title">{{ e($product->ProductName) }}</div>
+                                    <div class="product-rating">
+                                        <i class="fas fa-star"></i>
+                                        <i class="fas fa-star"></i>
+                                        <i class="fas fa-star"></i>
+                                        <i class="fas fa-star"></i>
+                                        <i class="fas fa-star-half-alt"></i>
+                                    </div>
+                                    <div class="price-container">
+                                        <span class="current-price">{{ number_format($product->CurrentPrice, 0) }}₫</span>
+                                        @if($product->DiscountPercentage)
+                                            <div>
+                                                <span class="original-price">{{ number_format($product->Price, 0) }}₫</span>
+                                                <span class="discount-badge">-{{ number_format($product->DiscountPercentage, 0) }}%</span>
+                                            </div>
+                                        @endif
+                                    </div>
+                                    <button class="add-to-cart" data-product-id="{{ $product->ProductID }}"
+                                        data-name="{{ e($product->ProductName) }}" data-price="{{ $product->CurrentPrice }}">
+                                        <i class="fas fa-shopping-cart"></i> <span>THÊM VÀO GIỎ</span>
+                                    </button>
+                                </div>
+                            </a>
+                        @else
+                            <p class="no-product-id">Sản phẩm không hợp lệ (ID: {{ $product->ProductID ?? 'null' }}).</p>
+                        @endif
+                    @endforeach
                 @endif
             </div>
             <!-- Pagination Links -->
@@ -404,10 +394,5 @@
             </div>
         </div>
     </div>
-
-    <!-- Dữ liệu cho scripts-home.js -->
-    <script>
-        window.categoriesFromDB = @json($categories);
-    </script>
 
 @endsection

@@ -1,51 +1,110 @@
 document.addEventListener('DOMContentLoaded', () => {
-    let activeMenu = null;
+    const formatVND = num => num.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' });
+    const showAlert = (icon, title, text, options = {}) => Swal.fire({ icon, title, text, confirmButtonText: 'OK', ...options });
 
-    // Dropdown menu for categories
-    document.querySelectorAll("nav a").forEach(item => {
-        const normalizedCategoryName = item.textContent.trim().toLowerCase();
-        if (categoriesFromDB[normalizedCategoryName]) {
-            const dropdownMenu = document.createElement("div");
-            dropdownMenu.classList.add("dropdown-menu");
-
-            categoriesFromDB[normalizedCategoryName].forEach(product => {
-                const productLink = document.createElement("a");
-                productLink.href = `ctsp.php?id=${product.ProductID}`;
-                productLink.textContent = product.ProductName;
-                dropdownMenu.appendChild(productLink);
-            });
-
-            document.body.appendChild(dropdownMenu);
-
-            item.addEventListener("mouseenter", () => {
-                if (activeMenu) activeMenu.classList.remove("active");
-                dropdownMenu.classList.add("active");
-                activeMenu = dropdownMenu;
-            });
-
-            dropdownMenu.addEventListener("mouseleave", () => {
-                dropdownMenu.classList.remove("active");
-                activeMenu = null;
-            });
+    const sendCartRequest = async (action, data) => {
+        const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content;
+        if (!csrfToken) {
+            showAlert('error', 'Lỗi', 'Thiếu CSRF token.');
+            return null;
         }
-    });
-
-    document.addEventListener("click", e => {
-        if (activeMenu && !e.target.closest(".dropdown-menu") && !e.target.closest("nav a")) {
-            activeMenu.classList.remove("active");
-            activeMenu = null;
+        try {
+            const response = await fetch(`/cart/${action}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'X-CSRF-TOKEN': csrfToken,
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: new URLSearchParams(data)
+            });
+            const json = await response.json();
+            if (!response.ok) {
+                showAlert('error', 'Lỗi', json.message || `Lỗi máy chủ (${response.status}).`);
+                return null;
+            }
+            return json;
+        } catch (error) {
+            console.error('Cart Error:', error);
+            showAlert('error', 'Lỗi kết nối', 'Đã có lỗi xảy ra: ' + error.message);
+            return null;
         }
-    });
+    };
 
-    // Search input placeholder
-    const searchInput = document.getElementById("search-input");
-    const dropdownSearch = document.getElementById("dropdown-search");
+    // Quantity controls
+    const quantityInput = document.querySelector('#quantity');
+    const decreaseBtn = document.querySelector('.quantity-btn.decrease');
+    const increaseBtn = document.querySelector('.quantity-btn.increase');
+    const addToCartBtn = document.querySelector('.add-to-cart');
 
-    searchInput.addEventListener("focus", () => {
-        dropdownSearch.classList.add("active");
-    });
+    if (quantityInput && decreaseBtn && increaseBtn) {
+        const updateQuantity = (newQty) => {
+            if (!window.isLoggedIn) {
+                showAlert('warning', 'Yêu cầu đăng nhập', 'Vui lòng đăng nhập để thêm sản phẩm vào giỏ hàng!', {
+                    willClose: () => window.location.href = '/login-register'
+                });
+                return false;
+            }
+            const max = parseInt(quantityInput.max);
+            if (isNaN(newQty) || newQty < 1) {
+                quantityInput.value = 1;
+                return false;
+            }
+            if (newQty > max) {
+                quantityInput.value = max;
+                showAlert('warning', 'Thông báo', `Số lượng tối đa là ${max} sản phẩm.`);
+                return false;
+            }
+            quantityInput.value = newQty;
+            return true;
+        };
 
-    searchInput.addEventListener("input", () => {
-        searchInput.setAttribute("placeholder", searchInput.value.trim() === "" ? "Tìm kiếm sản phẩm" : "");
-    });
+        decreaseBtn.addEventListener('click', () => {
+            updateQuantity(parseInt(quantityInput.value) - 1);
+        });
+
+        increaseBtn.addEventListener('click', () => {
+            updateQuantity(parseInt(quantityInput.value) + 1);
+        });
+
+        quantityInput.addEventListener('change', () => {
+            updateQuantity(parseInt(quantityInput.value));
+        });
+    }
+
+    if (addToCartBtn) {
+        addToCartBtn.addEventListener('click', async () => {
+            if (!window.isLoggedIn) {
+                showAlert('warning', 'Yêu cầu đăng nhập', 'Vui lòng đăng nhập để thêm sản phẩm vào giỏ hàng!', {
+                    willClose: () => window.location.href = '/login-register'
+                });
+                return;
+            }
+            addToCartBtn.disabled = true;
+            const productId = addToCartBtn.getAttribute('data-product-id');
+            const quantity = parseInt(quantityInput.value);
+            const data = await sendCartRequest('add', { product_id: productId, quantity });
+            addToCartBtn.disabled = false;
+            if (data?.success) {
+                showAlert('success', 'Thành công', 'Sản phẩm đã được thêm vào giỏ hàng!', { timer: 1500 });
+                document.querySelector('.cart-count').textContent = data.itemCount || 0;
+                document.querySelector('#cart-empty').style.display = data.itemCount > 0 ? 'none' : 'block';
+            }
+        });
+    }
+
+    // Image zoom effect
+    const mainImage = document.querySelector('.main-image img');
+    if (mainImage) {
+        mainImage.addEventListener('mousemove', (e) => {
+            const rect = mainImage.getBoundingClientRect();
+            const x = ((e.clientX - rect.left) / rect.width) * 100;
+            const y = ((e.clientY - rect.top) / rect.height) * 100;
+            mainImage.style.transformOrigin = `${x}% ${y}%`;
+            mainImage.style.transform = 'scale(1.5)';
+        });
+        mainImage.addEventListener('mouseleave', () => {
+            mainImage.style.transform = 'scale(1)';
+        });
+    }
 });
