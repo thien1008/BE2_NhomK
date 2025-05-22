@@ -123,6 +123,16 @@
                     <i class="bi bi-people"></i> Người dùng
                 </a>
             </li>
+            <li class="nav-item">
+                <a class="nav-link {{ request()->routeIs('admin.coupons.*') ? 'active' : '' }}" href="{{ route('admin.coupons.index') }}">
+                    <i class="bi bi-people"></i> Mã giảm giá
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link {{ request()->routeIs('admin.product_discounts.*') ? 'active' : '' }}" href="{{ route('admin.product_discounts.index') }}">
+                    <i class="bi bi-people"></i> Giảm giá sản phẩm
+                </a>
+            </li>
         </ul>
     </div>
 

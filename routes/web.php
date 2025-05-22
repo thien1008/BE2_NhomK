@@ -5,20 +5,24 @@ use App\Http\Controllers\CartController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\Auth\ForgotPasswordController;
 use App\Http\Controllers\Auth\ResetPasswordController;
-use App\Http\Controllers\ProfileController;
 
 
 // Admin
 use App\Http\Controllers\Admin\CategoryController;
+use App\Http\Controllers\Admin\CouponController;
 use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\OrderController;
+use App\Http\Controllers\Admin\ProductDiscountController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\ProfileController;
+use Illuminate\Routing\Route;
 
 Route::get('/login-register', [AuthController::class, 'showLoginRegisterForm'])->name('login-register');
 Route::post('/register', [AuthController::class, 'register'])->name('register');
 Route::post('/login', [AuthController::class, 'login'])->name('login');
 Route::get('/logout', [AuthController::class, 'logout'])->name('logout');
+
 
 Route::middleware(['auth'])->group(function () {
     Route::get('/home', [HomeController::class, 'index'])->name('home');
@@ -29,6 +33,7 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/cart/remove', [CartController::class, 'remove'])->name('cart.remove');
 });
 
+
 Route::prefix('admin')->middleware(['auth', 'admin'])->group(function () {
     Route::get('/', function () {
         return redirect()->route('admin.dashboard');
@@ -38,6 +43,8 @@ Route::prefix('admin')->middleware(['auth', 'admin'])->group(function () {
     Route::resource('products', ProductController::class)->names('admin.products');
     Route::resource('orders', OrderController::class)->names('admin.orders');
     Route::resource('users', UserController::class)->names('admin.users');
+    Route::resource('coupons', CouponController::class)->names('admin.coupons');
+    Route::resource('product-discounts', ProductDiscountController::class)->names('admin.product_discounts');
 });
 
 Route::get('/forgot-password', [ForgotPasswordController::class, 'showForgotPasswordForm'])
