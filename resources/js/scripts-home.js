@@ -1,33 +1,4 @@
 document.addEventListener('DOMContentLoaded', () => {
-    // Xử lý mouseleave trên toàn bộ header
-    const header = document.querySelector('header');
-    header.addEventListener('mouseleave', (e) => {
-        const dropdowns = document.querySelectorAll('.dropdown-menu');
-        let isMouseInDropdown = false;
-
-        // Kiểm tra xem chuột có đang ở trong một dropdown hay không
-        dropdowns.forEach(dropdown => {
-            if (dropdown.contains(e.relatedTarget)) {
-                isMouseInDropdown = true;
-            }
-        });
-
-        // Chỉ đóng các dropdown nếu chuột không ở trong dropdown
-        if (!isMouseInDropdown) {
-            closeAllDropdowns();
-        }
-    });
-
-    // Xử lý mouseleave trên các dropdown để đóng khi chuột rời khỏi dropdown
-    document.querySelectorAll('.dropdown-menu').forEach(dropdown => {
-        dropdown.addEventListener('mouseleave', (e) => {
-            // Đóng dropdown nếu chuột không di chuyển vào header hoặc một dropdown khác
-            if (!header.contains(e.relatedTarget) && !document.querySelector('.dropdown-menu').contains(e.relatedTarget)) {
-                toggleDropdown(dropdown, false);
-            }
-        });
-    });
-
     // Hàm tiện ích: Định dạng tiền tệ VND
     const formatVND = num => num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') + ' ₫';
 
@@ -36,66 +7,8 @@ document.addEventListener('DOMContentLoaded', () => {
         icon, title, text, confirmButtonText: 'OK', ...options
     });
 
-    // Hàm bật/tắt dropdown
-    const toggleDropdown = (dropdown, state) => {
-        if (dropdown) {
-            dropdown.classList.toggle('active', state);
-            const trigger = dropdown.previousElementSibling || dropdown.parentElement;
-            trigger?.setAttribute('aria-expanded', state);
-        }
-    };
-
-    // Hàm đóng tất cả dropdown trừ dropdown được chỉ định
-    const closeAllDropdowns = except => document.querySelectorAll('.dropdown-menu, .dropdown-search, .user-dropdown, .cart-dropdown')
-        .forEach(d => d !== except && toggleDropdown(d, false));
-
-    // Hàm debounce để trì hoãn thực thi
-    const debounce = (func, wait) => {
-        let timeout;
-        return (...args) => {
-            clearTimeout(timeout);
-            timeout = setTimeout(() => func(...args), wait);
-        };
-    };
-
-    function updateCartUI(data) {
-        if (data.success) {
-            // Cập nhật số lượng sản phẩm trên icon giỏ hàng (giả sử có phần tử #cart-count)
-            const cartCountElement = document.querySelector('#cart-count');
-            if (cartCountElement) {
-                cartCountElement.textContent = data.itemCount || 0;
-            }
-
-            // Nếu có phần tử hiển thị tổng tiền giỏ hàng
-            const cartTotalElement = document.querySelector('#cart-total');
-            if (cartTotalElement) {
-                cartTotalElement.textContent = data.total
-                    ? data.total.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' })
-                    : '0₫';
-            }
-
-            // Có thể hiển thị thông báo thành công
-            showAlert('success', 'Thành công', 'Giỏ hàng đã được cập nhật.');
-        } else {
-            showAlert('error', 'Lỗi', data.message || 'Không thể cập nhật giỏ hàng.');
-        }
-    }
-
-
-    // Hàm phân tích phản hồi JSON từ server
-    const parseResponse = async response => {
-        try {
-            return await response.json();
-        } catch (e) {
-            console.error('Invalid JSON:', await response.text());
-            showAlert('error', 'Lỗi', 'Phản hồi từ máy chủ không hợp lệ.');
-            return null;
-        }
-    };
-
-    // Hàm gửi yêu cầu AJAX đến server để xử lý giỏ hàng
+    // Fallback: Hàm gửi yêu cầu AJAX đến server để xử lý giỏ hàng
     const sendCartRequest = async (action, data, callback) => {
-        console.log('Sending data:', data);
         const url = `/cart/${action}`;
         const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content;
         if (!csrfToken) {
@@ -120,16 +33,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 showAlert('error', 'Lỗi', 'Phản hồi máy chủ không hợp lệ.');
                 return;
             }
-            console.log('Cart request response:', json);
             if (!response.ok) {
                 showAlert('error', 'Lỗi', json.message || `Lỗi máy chủ (${response.status}).`);
                 return;
             }
             if (json.success) {
-                if (action === 'add') {
-                    showAlert('success', 'Thành công', 'Sản phẩm đã được thêm vào giỏ hàng!', { timer: 1500, showConfirmButton: false });
-                }
-                callback(json); // Chỉ gọi callback, không gửi yêu cầu get tự động
+                callback(json);
             } else {
                 showAlert('error', 'Thất bại', json.message || 'Hành động không thành công.');
             }
@@ -140,7 +49,67 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    // Xử lý dropdown
+    // Xử lý mouseleave trên toàn bộ header
+    const header = document.querySelector('header');
+    header.addEventListener('mouseleave', (e) => {
+        const dropdowns = document.querySelectorAll('.dropdown-menu');
+        let isMouseInDropdown = false;
+
+        // Kiểm tra xem chuột có đang ở trong một dropdown-menu (navigation) hay không
+        dropdowns.forEach(dropdown => {
+            if (dropdown.contains(e.relatedTarget)) {
+                isMouseInDropdown = true;
+            }
+        });
+
+        // Chỉ đóng các dropdown-menu và overlay nếu chuột không ở trong dropdown-menu
+        if (!isMouseInDropdown) {
+            closeAllDropdowns();
+        }
+    });
+
+    // Xử lý mouseleave trên các dropdown-menu (navigation)
+    document.querySelectorAll('.dropdown-menu').forEach(dropdown => {
+        dropdown.addEventListener('mouseleave', (e) => {
+            // Đóng dropdown và overlay nếu chuột không di chuyển vào header hoặc một dropdown-menu khác
+            if (!header.contains(e.relatedTarget) && !document.querySelector('.dropdown-menu').contains(e.relatedTarget)) {
+                toggleDropdown(dropdown, false);
+                document.querySelector('.dropdown-overlay')?.classList.remove('active');
+            }
+        });
+    });
+
+    // Hàm bật/tắt dropdown
+    const toggleDropdown = (dropdown, state) => {
+        if (dropdown) {
+            dropdown.classList.toggle('active', state);
+            const trigger = dropdown.previousElementSibling || dropdown.parentElement;
+            trigger?.setAttribute('aria-expanded', state);
+        }
+    };
+
+    // Hàm đóng tất cả dropdown trừ dropdown được chỉ định
+    const closeAllDropdowns = except => {
+        document.querySelectorAll('.dropdown-menu, .dropdown-search, .user-dropdown, .cart-dropdown')
+            .forEach(d => d !== except && toggleDropdown(d, false));
+        // Chỉ xóa overlay nếu không có dropdown-menu nào đang active
+        if (!except || !except.classList.contains('dropdown-menu')) {
+            const hasActiveNavDropdown = document.querySelector('.dropdown-menu.active');
+            if (!hasActiveNavDropdown) {
+                document.querySelector('.dropdown-overlay')?.classList.remove('active');
+            }
+        }
+    };
+
+    // Hàm debounce để trì hoãn thực thi
+    const debounce = (func, wait) => {
+        let timeout;
+        return (...args) => {
+            clearTimeout(timeout);
+            timeout = setTimeout(() => func(...args), wait);
+        };
+    };
+
     // Xử lý dropdown
     const setupDropdown = (trigger, dropdown, isMobileClick = false) => {
         const handleToggle = (e, forceState) => {
@@ -153,8 +122,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (e.type === 'mouseenter') {
                     closeAllDropdowns(dropdown);
                     toggleDropdown(dropdown, true);
+                    // Chỉ bật overlay cho .dropdown-menu (navigation)
+                    if (dropdown.classList.contains('dropdown-menu')) {
+                        document.querySelector('.dropdown-overlay')?.classList.add('active');
+                    }
                 }
-                // Không xử lý mouseleave ở đây nữa
             }
         };
 
@@ -221,22 +193,19 @@ document.addEventListener('DOMContentLoaded', () => {
                     result.classList.add('search-result');
                     result.href = `/product/${product.ProductID}`;
 
-                    // Đảm bảo CurrentPrice là số trước khi format
                     const currentPrice = !isNaN(Number(product.CurrentPrice))
                         ? Number(product.CurrentPrice).toLocaleString()
                         : '0';
-                    console.log('Search result item:', product);
-
                     result.innerHTML = `
-        <img src="/images/${product.ImageURL}" alt="${product.ProductName}">
-        <div class="search-result-details">
-            <div class="search-result-name">${product.ProductName.replace(regex, '<strong>$1</strong>')}</div>
-            <div class="search-result-price">
-                ${currentPrice}₫
-                ${product.DiscountPercentage ? `<span class="search-result-discount">-${product.DiscountPercentage}%</span>` : ''}
-            </div>
-        </div>
-    `;
+                        <img src="/images/${product.ImageURL}" alt="${product.ProductName}">
+                        <div class="search-result-details">
+                            <div class="search-result-name">${product.ProductName.replace(regex, '<strong>$1</strong>')}</div>
+                            <div class="search-result-price">
+                                ${currentPrice}₫
+                                ${product.DiscountPercentage ? `<span class="search-result-discount">-${product.DiscountPercentage}%</span>` : ''}
+                            </div>
+                        </div>
+                    `;
                     searchResults.appendChild(result);
                 });
 
@@ -275,7 +244,6 @@ document.addEventListener('DOMContentLoaded', () => {
     if (cartContainer && cartDropdown) {
         let isCartVisible = false;
 
-        // Hàm lấy dữ liệu giỏ hàng từ server
         const fetchCart = () => {
             if (!window.isLoggedIn) return;
             cartItems.style.display = 'block';
@@ -286,51 +254,35 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         };
 
-        // Hàm cập nhật giao diện giỏ hàng
         const updateCartUI = ({ total = 0, itemCount = 0, cart = [] }) => {
-            // Cập nhật số lượng sản phẩm ở biểu tượng giỏ
             cartCount && (cartCount.textContent = itemCount);
 
-            // Nếu không có sản phẩm trong giỏ
             if (!Array.isArray(cart) || cart.length === 0) {
-                // Ẩn các sản phẩm nếu có
                 const existingItems = cartItems.querySelectorAll('.cart-dropdown-item');
                 existingItems.forEach(item => item.remove());
-
-                // Hiển thị thông báo giỏ hàng trống
                 cartEmpty && (cartEmpty.style.display = 'block');
             } else {
-                // Ẩn phần thông báo trống
                 cartEmpty && (cartEmpty.style.display = 'none');
-
-                // Xóa sản phẩm cũ nếu có
                 const existingItems = cartItems.querySelectorAll('.cart-dropdown-item');
                 existingItems.forEach(item => item.remove());
-
-                // Hiển thị các sản phẩm mới
                 cart.forEach(item => {
                     const div = document.createElement('div');
                     div.classList.add('cart-dropdown-item');
                     div.innerHTML = `
-                <img src="/images/${item.ImageURL}" alt="${item.ProductName}" class="cart-dropdown-item-image">
-                <div class="cart-dropdown-item-details">
-                    <div class="cart-dropdown-item-name">${item.ProductName}</div>
-                    <div class="cart-dropdown-item-price">${formatVND(item.Price * item.Quantity)}</div>
-                </div>
-            `;
+                        <img src="/images/${item.ImageURL}" alt="${item.ProductName}" class="cart-dropdown-item-image">
+                        <div class="cart-dropdown-item-details">
+                            <div class="cart-dropdown-item-name">${item.ProductName}</div>
+                            <div class="cart-dropdown-item-price">${formatVND(item.Price * item.Quantity)}</div>
+                        </div>
+                    `;
                     cartItems.appendChild(div);
                 });
             }
 
-            // Cập nhật tổng giá
             cartTotalPrice && (cartTotalPrice.textContent = formatVND(total));
-
-            // Đánh dấu là đã load xong
             isCartVisible = true;
         };
 
-
-        // Hàm xử lý sự kiện hover và click vào giỏ hàng
         const handleCartToggle = (e, forceState) => {
             e.stopPropagation();
             e.preventDefault();
@@ -365,7 +317,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Xử lý nút thanh toán
     checkoutBtn?.addEventListener('click', () => {
         if (!window.isLoggedIn) return requireLogin('Vui lòng đăng nhập để thanh toán!');
         sendCartRequest('get', {}, data => {
@@ -374,11 +325,10 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    // Tương tác với sản phẩm
     const initProductInteractions = () => {
         const handleButton = (selector, callback) => document.querySelectorAll(selector).forEach(btn =>
             btn.addEventListener('click', (e) => {
-                e.stopPropagation(); // Prevent card click
+                e.stopPropagation();
                 callback(btn)();
             }));
 
@@ -418,21 +368,12 @@ document.addEventListener('DOMContentLoaded', () => {
         document.querySelector('.product-modal-close')?.addEventListener('click', () =>
             document.querySelector('.product-modal').classList.remove('active'));
 
-        // Handle product card clicks for pagination-loaded cards
         document.querySelector('.products-slider').addEventListener('click', (e) => {
             const card = e.target.closest('.product-card');
             if (card && !e.target.closest('.product-action-btn, .add-to-cart')) {
                 const href = card.getAttribute('href');
                 const productId = card.getAttribute('data-product-id');
-                console.log('Product card clicked:', {
-                    href,
-                    productId,
-                    tagName: card.tagName,
-                    target: e.target.tagName,
-                    isAnchor: card.tagName === 'A'
-                });
                 if (href && href !== '/product/' && href !== '/product/null' && productId && productId !== 'null') {
-                    console.log('Navigating to:', href);
                     window.location.href = href;
                 } else {
                     console.error('Navigation failed:', { href, productId });
@@ -442,7 +383,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     };
 
-    // Xử lý sự kiện trên các mục trong giỏ hàng
     if (cartItems) {
         cartItems.addEventListener('click', e => {
             if (!window.isLoggedIn) return requireLogin('Vui lòng đăng nhập để tiếp tục!');
@@ -506,7 +446,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Phân trang AJAX
     const initPagination = () => {
         document.querySelectorAll('.pagination .page-link').forEach(link => {
             link.addEventListener('click', async e => {
@@ -518,35 +457,35 @@ document.addEventListener('DOMContentLoaded', () => {
                     const data = await res.json();
                     const slider = document.querySelector('.products-slider');
                     slider.innerHTML = data.products?.length ? data.products.map(product => `
-                    <a href="/product/${product.id}" class="product-card" role="listitem" data-product-id="${product.id}">
-                        <div class="product-image">
-                            <img src="/images/${product.ImageURL}" alt="${product.ProductName}" loading="lazy" width="200" height="200">
-                            ${product.DiscountPercentage ? '<span class="product-badge">Sale!</span>' : ''}
-                            <div class="product-actions">
-                                <button class="product-action-btn quick-view" data-product-id="${product.id}" aria-label="Quick view"><i class="fas fa-eye"></i></button>
-                                <button class="product-action-btn add-to-wishlist" data-product-id="${product.id}" aria-label="Add to wishlist"><i class="far fa-heart"></i></button>
+                        <a href="/product/${product.id}" class="product-card" role="listitem" data-product-id="${product.id}">
+                            <div class="product-image">
+                                <img src="/images/${product.ImageURL}" alt="${product.ProductName}" loading="lazy" width="200" height="200">
+                                ${product.DiscountPercentage ? '<span class="product-badge">Sale!</span>' : ''}
+                                <div class="product-actions">
+                                    <button class="product-action-btn quick-view" data-product-id="${product.id}" aria-label="Quick view"><i class="fas fa-eye"></i></button>
+                                    <button class="product-action-btn add-to-wishlist" data-product-id="${product.id}" aria-label="Add to wishlist"><i class="far fa-heart"></i></button>
+                                </div>
                             </div>
-                        </div>
-                        <div class="product-details">
-                            <div class="product-title">${product.ProductName}</div>
-                            <div class="product-rating">
-                                <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star-half-alt"></i>
+                            <div class="product-details">
+                                <div class="product-title">${product.ProductName}</div>
+                                <div class="product-rating">
+                                    <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star-half-alt"></i>
+                                </div>
+                                <div class="price-container">
+                                    <span class="current-price">${product.CurrentPrice.toLocaleString()}₫</span>
+                                    ${product.DiscountPercentage ? `
+                                        <div>
+                                            <span class="original-price">${product.Price.toLocaleString()}₫</span>
+                                            <span class="discount-badge">-${product.DiscountPercentage}%</span>
+                                        </div>
+                                    ` : ''}
+                                </div>
+                                <button class="add-to-cart" data-product-id="${product.id}" data-name="${product.ProductName}" data-price="${product.CurrentPrice}">
+                                    <i class="fas fa-shopping-cart"></i> THÊM VÀO GIỎ
+                                </button>
                             </div>
-                            <div class="price-container">
-                                <span class="current-price">${product.CurrentPrice.toLocaleString()}₫</span>
-                                ${product.DiscountPercentage ? `
-                                    <div>
-                                        <span class="original-price">${product.Price.toLocaleString()}₫</span>
-                                        <span class="discount-badge">-${product.DiscountPercentage}%</span>
-                                    </div>
-                                ` : ''}
-                            </div>
-                            <button class="add-to-cart" data-product-id="${product.id}" data-name="${product.ProductName}" data-price="${product.CurrentPrice}">
-                                <i class="fas fa-shopping-cart"></i> THÊM VÀO GIỎ
-                            </button>
-                        </div>
-                    </a>
-                `).join('') : '<p class="no-products">Không có sản phẩm nào để hiển thị.</p>';
+                        </a>
+                    `).join('') : '<p class="no-products">Không có sản phẩm nào để hiển thị.</p>';
                     document.querySelector('.pagination').innerHTML = data.pagination;
                     initProductInteractions();
                 } catch (err) {
@@ -560,7 +499,6 @@ document.addEventListener('DOMContentLoaded', () => {
     initProductInteractions();
     initPagination();
 
-    // Điều hướng slider sản phẩm
     const prevBtn = document.querySelector('.nav-button.prev');
     const nextBtn = document.querySelector('.nav-button.next');
     const slider = document.querySelector('.products-slider');
@@ -572,7 +510,6 @@ document.addEventListener('DOMContentLoaded', () => {
         nextBtn && (nextBtn.style.display = 'none');
     }
 
-    // Hiệu ứng cuộn hiển thị
     const observer = new IntersectionObserver((entries, obs) => {
         entries.forEach(entry => {
             if (entry.isIntersecting) {

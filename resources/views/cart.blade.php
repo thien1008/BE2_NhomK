@@ -139,7 +139,7 @@
                     <span class="user-profile">
                         <i class="fas fa-user-circle"></i>
                         @if (auth()->check())
-                            Xin chào, {{ auth()->user()->FullName }}
+                            {{ auth()->user()->FullName }}
                         @endif
                     </span>
                     <div class="user-dropdown" id="user-dropdown">

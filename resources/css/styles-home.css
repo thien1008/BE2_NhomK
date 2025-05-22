@@ -76,8 +76,7 @@ header {
   padding: 1rem 6rem;
   z-index: 1000;
   transition: all 0.3s ease;
-  background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(8px);
+  background: #ffffff;
   box-shadow: var(--shadow);
   border-radius: var(--radius);
   display: flex;
@@ -218,29 +217,56 @@ header nav button:hover::after {
 /* Updated Category Dropdown */
 .dropdown-menu {
   position: fixed;
-  top: calc(5px + 72px);
+  top: 105px;
   left: 0;
   width: 100vw;
-  background: var(--background);
+  background: #ffffff;
   border-radius: 0 0 var(--radius) var(--radius);
-  box-shadow: var(--shadow);
+  box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.08);
   z-index: 5020;
   opacity: 0;
   visibility: hidden;
-  transform: translateY(-20px);
+  transform: translateY(0);
   transition: opacity 0.3s ease, transform 0.3s ease;
   border-left: 1px solid var(--border);
   border-right: 1px solid var(--border);
   border-bottom: 1px solid var(--border);
   border-top: 0;
-  /* Xóa viền trên */
   padding: 10px 0 30px 0;
+  min-height: 150px;
 }
 
 .dropdown-menu.active {
   opacity: 1;
   visibility: visible;
   transform: translateY(0);
+}
+
+/* Dropdown Overlay for Background Blur */
+.dropdown-overlay {
+  position: fixed;
+  top: 234px;
+  left: 0;
+  width: 100vw;
+  height: calc(100vh - 234px);
+  background: rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(3px);
+  z-index: 5010;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s ease;
+}
+
+.dropdown-overlay.active {
+  opacity: 1;
+  visibility: visible;
+}
+
+/* Hide overlay on mobile */
+@media (max-width: 768px) {
+  .dropdown-overlay {
+    display: none;
+  }
 }
 
 .dropdown-menu a {
@@ -277,11 +303,13 @@ header nav button:hover::after {
 .dropdown-search,
 .user-dropdown,
 .cart-dropdown {
+  margin-top: 13px;
   position: absolute;
   background: var(--background);
   border-radius: var(--radius);
   box-shadow: var(--shadow);
   z-index: 5020;
+  width: 200px;
   opacity: 0;
   visibility: hidden;
   transform: translateY(10px);

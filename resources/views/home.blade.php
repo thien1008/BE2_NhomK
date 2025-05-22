@@ -145,6 +145,7 @@
                         {{ e($user->FullName) }}
                     </span>
                     <div class="user-dropdown" id="user-dropdown">
+                        <a href="{{ route('profile') }}">Thông tin cá nhân</a>
                         <a href="{{ route('logout') }}"
                             onclick="event.preventDefault(); document.getElementById('logout-form').submit();">Đăng xuất</a>
                         <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
@@ -155,6 +156,7 @@
             @endguest
         </nav>
     </header>
+    <div class="dropdown-overlay"></div>
 
     @if (session('success'))
         <div class="alert alert-success">
@@ -176,7 +178,6 @@
         </div>
     </section>
 
-    <!-- Products section -->
     <!-- Products section -->
     <section class="products-section scroll-reveal">
         <div class="promo-container">
@@ -388,7 +389,7 @@
     <!-- Quick product view modal -->
     <div class="product-modal" role="dialog" aria-hidden="true">
         <div class="product-modal-content">
-            <span class="product-modal-close">&times;</span>
+            <span class="product-modal-close">×</span>
             <div class="product-modal-body">
                 <!-- Product quick view content will be loaded here -->
             </div>

@@ -6,11 +6,11 @@ use App\Http\Controllers\HomeController;
 use App\Http\Controllers\Auth\ForgotPasswordController;
 use App\Http\Controllers\Auth\ResetPasswordController;
 use App\Http\Controllers\ProfileController;
-
+use App\Http\Controllers\ProductController;
 
 // Admin
 use App\Http\Controllers\Admin\CategoryController;
-use App\Http\Controllers\Admin\ProductController;
+use App\Http\Controllers\Admin\ProductController as AdminProductController;
 use App\Http\Controllers\Admin\OrderController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\DashboardController;
@@ -18,7 +18,7 @@ use App\Http\Controllers\DashboardController;
 Route::get('/login-register', [AuthController::class, 'showLoginRegisterForm'])->name('login-register');
 Route::post('/register', [AuthController::class, 'register'])->name('register');
 Route::post('/login', [AuthController::class, 'login'])->name('login');
-Route::get('/logout', [AuthController::class, 'logout'])->name('logout');
+Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
 Route::middleware(['auth'])->group(function () {
     Route::get('/home', [HomeController::class, 'index'])->name('home');
@@ -27,6 +27,8 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/cart/get', [CartController::class, 'get'])->name('cart.get');
     Route::post('/cart/update', [CartController::class, 'update'])->name('cart.update');
     Route::post('/cart/remove', [CartController::class, 'remove'])->name('cart.remove');
+    Route::get('/profile', [ProfileController::class, 'index'])->name('profile');
+    Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');
 });
 
 Route::prefix('admin')->middleware(['auth', 'admin'])->group(function () {
@@ -35,7 +37,7 @@ Route::prefix('admin')->middleware(['auth', 'admin'])->group(function () {
     })->name('admin');
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('admin.dashboard');
     Route::resource('categories', CategoryController::class)->names('admin.categories');
-    Route::resource('products', ProductController::class)->names('admin.products');
+    Route::resource('products', AdminProductController::class)->names('admin.products');
     Route::resource('orders', OrderController::class)->names('admin.orders');
     Route::resource('users', UserController::class)->names('admin.users');
 });
@@ -55,7 +57,4 @@ Route::post('/reset-password', [ResetPasswordController::class, 'resetPassword']
 
 Route::get('/', [HomeController::class, 'index'])->name('home');
 Route::get('/product/{id}', [ProductController::class, 'show'])->name('product.show');
-Route::get('/profile', [ProfileController::class, 'index'])->name('profile');
 Route::get('/products/search', [ProductController::class, 'search'])->name('product.search');
-
-Route::get('/product/{id}', [App\Http\Controllers\ProductController::class, 'show']);
