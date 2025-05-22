@@ -40,7 +40,9 @@
 
         <div class="header-slogan">
             <div class="slogan-item">
-                <img src="{{ asset('../img/header1.webp') }}" alt="Chất lượng" class="slogan-icon" width="20" height="20"
+                {{-- <img src="{{ asset('../img/header1.webp') }}" alt="Chất lượng" class="slogan-icon" width="20" height="20"
+                    loading="lazy" /> --}}
+                <img src="{{ asset('img/header1.webp') }}" alt="Chất lượng" class="slogan-icon" width="20" height="20"
                     loading="lazy" />
                 <span>Chất lượng đảm bảo</span>
             </div>
@@ -352,6 +354,7 @@
                         <p><i class="fas fa-map-marker-alt"></i> CS1: Đồng khởi - Quận 1</p>
                         <p><i class="fas fa-phone"></i> 0346638136</p>
                         <p><i class="fas fa-envelope"></i> bthvuong23@gmail.com</p>
+                        <p><i class="fas fa-envelope"></i> vudinhthien719@gmail.com</p>
                         <p><i class="fas fa-clock"></i> Thứ 2 - Thứ 7: 8:00 - 22:00</p>
                     </div>
                 </div>

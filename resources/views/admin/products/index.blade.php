@@ -50,7 +50,7 @@
                             <td>{{ $product->ProductID }}</td>
                             <td>
                                 @if ($product->ImageURL)
-                                    <img src="{{ Storage::url($product->ImageURL) }}" class="product-img" alt="{{ $product->ProductName }}">
+                                    <img src="{{ asset('storage/' . ltrim($product->ImageURL, '/')) }}" class="product-img" alt="{{ $product->ProductName }}">
                                 @else
                                     <div class="placeholder-img bg-light d-flex align-items-center justify-content-center" style="width:70px;height:70px;">
                                         <i class="bi bi-image text-secondary" style="font-size:1.5rem;"></i>

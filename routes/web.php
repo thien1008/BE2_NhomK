@@ -10,10 +10,13 @@ use App\Http\Controllers\Auth\ResetPasswordController;
 
 // admin
 use App\Http\Controllers\Admin\CategoryController;
+use App\Http\Controllers\Admin\CouponController;
 use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\OrderController;
+use App\Http\Controllers\Admin\ProductDiscountController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\ProfileController;
 
 // Auth routes
 Route::get('/login-register', [AuthController::class, 'showLoginRegisterForm'])->name('login-register');
@@ -24,9 +27,9 @@ Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 Route::get('/logout', [AuthController::class, 'logout'])->name('logout');
 
 // Các route yêu cầu đăng nhập
-Route::middleware(['auth'])->group(function () {
-    Route::get('/home', [HomeController::class, 'index'])->name('home');
-});
+// Route::middleware(['auth'])->group(function () {
+//     Route::get('/home', [HomeController::class, 'index'])->name('home');
+// });
 
 // Route::get('/admin', function () {
 //     return view('admin.layouts.app');
@@ -46,6 +49,8 @@ Route::prefix('admin')->middleware(['auth', 'admin'])->group(function () {
     Route::resource('products', ProductController::class)->names('admin.products');
     Route::resource('orders', OrderController::class)->names('admin.orders');
     Route::resource('users', UserController::class)->names('admin.users');
+    Route::resource('coupons', CouponController::class)->names('admin.coupons');
+    Route::resource('product-discounts', ProductDiscountController::class)->names('admin.product_discounts');
 });
 
 // require __DIR__.'/auth.php';
