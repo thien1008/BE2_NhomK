@@ -80,8 +80,8 @@
                             <i class="bi bi-person-circle"></i> {{ auth()->user()->FullName }}
                         </a>
                         <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
-                            <li><a class="dropdown-item" href="#">Hồ sơ</a></li>
-                            <li><hr class="dropdown-divider"></li>
+                            {{-- <li><a class="dropdown-item" href="#">Hồ sơ</a></li>
+                            <li><hr class="dropdown-divider"></li> --}}
                             <li>
                                 <form action="{{ route('logout') }}" method="POST">
                                     @csrf
@@ -125,12 +125,12 @@
             </li>
             <li class="nav-item">
                 <a class="nav-link {{ request()->routeIs('admin.coupons.*') ? 'active' : '' }}" href="{{ route('admin.coupons.index') }}">
-                    <i class="bi bi-people"></i> Mã giảm giá
+                    <i class="bi bi-ticket-fill"></i> Mã giảm giá
                 </a>
             </li>
             <li class="nav-item">
                 <a class="nav-link {{ request()->routeIs('admin.product_discounts.*') ? 'active' : '' }}" href="{{ route('admin.product_discounts.index') }}">
-                    <i class="bi bi-people"></i> Giảm giá sản phẩm
+                    <i class="bi bi-percent"></i> Giảm giá sản phẩm
                 </a>
             </li>
         </ul>

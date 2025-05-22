@@ -101,9 +101,9 @@
                             <td>
                                 @php
                                     $statusClass = match ($order->Status) {
-                                        'Pending' => 'status-pending bg-warning',
-                                        'Completed' => 'status-completed bg-success',
-                                        'Cancelled' => 'status-cancelled bg-danger',
+                                        'Pending' => 'bg-warning',
+                                        'Completed' => 'bg-success',
+                                        'Cancelled' => 'bg-danger',
                                         default => '',
                                     };
                                 @endphp
@@ -145,15 +145,6 @@
     }
     .status {
         font-weight: bold;
-    }
-    .status-pending {
-        color: #f39c12;
-    }
-    .status-completed {
-        color: #27ae60;
-    }
-    .status-cancelled {
-        color: #e74c3c;
     }
 </style>
 @endsection

@@ -80,7 +80,7 @@
                         @endforeach
                     </tbody>
                 </table>
-                {{ $coupons->links() }}
+                {{ $coupons->links('pagination::bootstrap-5') }}
             </div>
         </div>
     </div>
