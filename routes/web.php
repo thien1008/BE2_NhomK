@@ -16,7 +16,7 @@ use App\Http\Controllers\Admin\ProductDiscountController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ProfileController;
-use Illuminate\Routing\Route;
+use Illuminate\Support\Facades\Route;
 
 Route::get('/login-register', [AuthController::class, 'showLoginRegisterForm'])->name('login-register');
 Route::post('/register', [AuthController::class, 'register'])->name('register');
