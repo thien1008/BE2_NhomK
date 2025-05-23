@@ -181,4 +181,46 @@ class AuthController extends Controller
                 ->with('active_tab', 'login');
         }
     }
+
+    public function redirectToFacebook()
+    {
+        return Socialite::driver('facebook')->redirect();
+    }
+
+    public function handleFacebookCallback()
+    {
+        try {
+            $facebookUser = Socialite::driver('facebook')->user();
+            
+            $user = User::where('FacebookID', $facebookUser->id)->orWhere('Email', $facebookUser->email)->first();
+
+            if (!$user) {
+                $user = User::create([
+                    'FullName' => $facebookUser->name,
+                    'Email' => $facebookUser->email,
+                    'FacebookID' => $facebookUser->id,
+                    'UserType' => 'Regular',
+                    'Phone' => null,
+                    'password' => bcrypt(str_random(16)),
+                ]);
+            } else {
+                if (!$user->FacebookID) {
+                    $user->update(['FacebookID' => $facebookUser->id]);
+                }
+            }
+
+            Auth::login($user, true);
+            
+            if ($user->UserType === 'Admin') {
+                return redirect()->route('admin.dashboard');
+            }
+            return redirect()->route('home');
+
+        } catch (\Exception $e) {
+            \Log::error('Facebook login error: ' . $e->getMessage());
+            return redirect()->route('login-register')
+                ->withErrors(['login_error' => 'Có lỗi xảy ra khi đăng nhập bằng Facebook. Vui lòng thử lại.'])
+                ->with('active_tab', 'login');
+        }
+    }
 }

@@ -20,6 +20,7 @@ return new class extends Migration
             $table->string('Phone', 15)->unique()->nullable();
             $table->enum('UserType', ['Regular', 'VIP', 'Admin'])->default('Regular');
             $table->string('GoogleID', 255)->unique()->nullable();
+            $table->string('FacebookID', 255)->unique()->nullable();
             $table->datetime('CreatedAt')->useCurrent();
             $table->rememberToken(); // Laravel's remember_token for "Remember Me" functionality
             $table->timestamps(); // Laravel's created_at and updated_at
