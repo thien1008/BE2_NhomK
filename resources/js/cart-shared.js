@@ -110,7 +110,7 @@ document.addEventListener('DOMContentLoaded', () => {
             });
     };
 
-    const updateCartUI = (data) => {
+    window.updateCartUI = (data) => {
         const cartEmptyMessage = document.querySelector('.cart-empty');
         if (cartCount) cartCount.textContent = data.itemCount || 0;
         if (cartItems) {
@@ -182,6 +182,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 removeButtons.forEach(button => {
                     button.addEventListener('click', (e) => {
                         e.preventDefault();
+                         e.stopPropagation();
                         if (!window.isLoggedIn) {
                             alert('Vui lòng đăng nhập để tiếp tục.');
                             window.location.href = '/login-register';

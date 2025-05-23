@@ -2,13 +2,12 @@
 
 use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\CartController;
+use App\Http\Controllers\CheckoutController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\Auth\ForgotPasswordController;
 use App\Http\Controllers\Auth\ResetPasswordController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ProductController;
-
-// Admin
 use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\ProductController as AdminProductController;
 use App\Http\Controllers\Admin\OrderController;
@@ -27,6 +26,10 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/cart/get', [CartController::class, 'get'])->name('cart.get');
     Route::post('/cart/update', [CartController::class, 'update'])->name('cart.update');
     Route::post('/cart/remove', [CartController::class, 'remove'])->name('cart.remove');
+    Route::post('/cart/clear', [CartController::class, 'clear'])->name('cart.clear');
+    Route::get('/checkout', [CheckoutController::class, 'index'])->name('checkout');
+    Route::post('/checkout', [CheckoutController::class, 'store'])->name('checkout.store');
+    Route::get('/checkout/complete', [CheckoutController::class, 'complete'])->name('checkout.complete');
     Route::get('/profile', [ProfileController::class, 'index'])->name('profile');
     Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');
 });

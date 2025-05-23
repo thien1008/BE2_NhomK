@@ -1,5 +1,4 @@
 <?php
-// app/Models/Order.php
 
 namespace App\Models;
 
@@ -10,45 +9,63 @@ class Order extends Model
 {
     use HasFactory;
 
-    /**
-     * Tên bảng trong cơ sở dữ liệu
-     *
-     * @var string
-     */
-    protected $table = 'orders';
-
-    /**
-     * Khóa chính của bảng
-     *
-     * @var string
-     */
-    protected $primaryKey = 'OrderID';
-
-    /**
-     * Các thuộc tính có thể gán hàng loạt
-     *
-     * @var array<int, string>
-     */
     protected $fillable = [
-        'UserID',
-        'TotalPrice',
-        'Status',
-        'CreatedAt'
+        'user_id',
+        'full_name',
+        'phone',
+        'email',
+        'address',
+        'province',
+        'district',
+        'payment_method',
+        'notes',
+        'total',
+        'status',
     ];
 
-    /**
-     * Quan hệ với User
-     */
-    public function user()
+    public function items()
     {
-        return $this->belongsTo(User::class, 'UserID', 'UserID');
+        return $this->hasMany(OrderItem::class);
     }
 
-    /**
-     * Quan hệ với OrderDetails
-     */
-    public function orderDetails()
+    public function user()
     {
-        return $this->hasMany(OrderDetail::class, 'OrderID', 'OrderID');
+        return $this->belongsTo(User::class);
+    }
+
+    // Phương thức tạo đơn hàng
+    public static function createOrder(array $data)
+    {
+        return self::create([
+            'user_id' => $data['user_id'],
+            'full_name' => $data['full_name'],
+            'phone' => $data['phone'],
+            'email' => $data['email'],
+            'address' => $data['address'],
+            'province' => $data['province'],
+            'district' => $data['district'],
+            'payment_method' => $data['payment_method'],
+            'notes' => $data['notes'],
+            'total' => $data['total'],
+            'status' => 'pending',
+        ]);
+    }
+
+    // Truy vấn đơn hàng mới nhất của người dùng
+    public static function getLatestOrder($userId)
+    {
+        return self::where('user_id', $userId)
+            ->orderBy('created_at', 'desc')
+            ->with('items')
+            ->first();
+    }
+
+    // Truy vấn tất cả đơn hàng của người dùng
+    public static function getUserOrders($userId)
+    {
+        return self::where('user_id', $userId)
+            ->with('items')
+            ->orderBy('created_at', 'desc')
+            ->get();
     }
 }

@@ -201,11 +201,12 @@
                 @else
                     @foreach($products as $product)
                         @if($product->ProductID && \App\Models\Product::where('ProductID', $product->ProductID)->exists())
-                            <a href="/product/{{ $product->ProductID }}" class="product-card" role="listitem"
-                                data-product-id="{{ $product->ProductID }}">
+                            <div class="product-card" role="listitem" data-product-id="{{ $product->ProductID }}">
                                 <div class="product-image">
-                                    <img src="{{ asset('images/' . $product->ImageURL) }}" alt="{{ e($product->ProductName) }}"
-                                        loading="lazy" width="200" height="200">
+                                    <a href="/product/{{ $product->ProductID }}">
+                                        <img src="{{ asset('images/' . $product->ImageURL) }}" alt="{{ e($product->ProductName) }}"
+                                            loading="lazy" width="200" height="200">
+                                    </a>
                                     @if($product->DiscountPercentage)
                                         <span class="product-badge">Sale!</span>
                                     @endif
@@ -221,7 +222,8 @@
                                     </div>
                                 </div>
                                 <div class="product-details">
-                                    <div class="product-title">{{ e($product->ProductName) }}</div>
+                                    <a href="/product/{{ $product->ProductID }}"
+                                        class="product-title">{{ e($product->ProductName) }}</a>
                                     <div class="product-rating">
                                         <i class="fas fa-star"></i>
                                         <i class="fas fa-star"></i>
@@ -243,7 +245,7 @@
                                         <i class="fas fa-shopping-cart"></i> <span>THÊM VÀO GIỎ</span>
                                     </button>
                                 </div>
-                            </a>
+                            </div>
                         @else
                             <p class="no-product-id">Sản phẩm không hợp lệ (ID: {{ $product->ProductID ?? 'null' }}).</p>
                         @endif

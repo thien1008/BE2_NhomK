@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\Auth;
 class Cart extends Model
 {
     protected $table = 'cart';
-    protected $primaryKey = 'CartID'; // Specify the correct primary key
+    protected $primaryKey = 'CartID';
     protected $fillable = ['UserID', 'ProductID', 'Quantity'];
 
     public function product()
@@ -49,5 +49,16 @@ class Cart extends Model
     public static function getUserCartCount()
     {
         return self::where('UserID', Auth::id())->sum('Quantity');
+    }
+
+    /**
+     * Xóa toàn bộ giỏ hàng của người dùng
+     *
+     * @param int $userId
+     * @return int
+     */
+    public static function clearCart($userId)
+    {
+        return self::where('UserID', $userId)->delete();
     }
 }

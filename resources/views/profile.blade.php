@@ -24,12 +24,20 @@
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
         }
 
-        h1 {
+        h1, h2 {
             font-family: 'Kanit', sans-serif;
-            font-size: 28px;
             color: #333;
             text-align: center;
             margin-bottom: 20px;
+        }
+
+        h1 {
+            font-size: 28px;
+        }
+
+        h2 {
+            font-size: 22px;
+            margin-top: 40px;
         }
 
         .form-group {
@@ -121,6 +129,10 @@
             h1 {
                 font-size: 24px;
             }
+
+            h2 {
+                font-size: 20px;
+            }
         }
     </style>
 @endpush
@@ -170,16 +182,49 @@
 
             <div class="form-group">
                 <label for="created-at">Ngày Tạo</label>
-                <input type="text" id="created-at" name="CreatedAt" value="{{ \Carbon\Carbon::parse($user->created_at)->format('d/m/Y') }}
-    " readonly>
+                <input type="text" id="created-at" name="CreatedAt" value="{{ \Carbon\Carbon::parse($user->created_at)->format('d/m/Y') }}" readonly>
             </div>
 
             <button type="submit" class="submit-btn">Cập Nhật Thông Tin</button>
         </form>
+
+        <h2>Thay Đổi Mật Khẩu</h2>
+        <form id="change-password-form" method="POST" action="{{ route('password.update') }}">
+            @csrf
+            @method('PUT')
+
+            <div class="form-group">
+                <label for="current-password">Mật Khẩu Hiện Tại</label>
+                <input type="password" id="current-password" name="current_password" required>
+                @error('current_password')
+                    <span class="error show">{{ $message }}</span>
+                @enderror
+            </div>
+
+            <div class="form-group">
+                <label for="new-password">Mật Khẩu Mới</label>
+                <input type="password" id="new-password" name="new_password" required>
+                @error('new_password')
+                    <span class="error show">{{ $message }}</span>
+                @enderror
+            </div>
+
+            <div class="form-group">
+                <label for="new-password-confirmation">Xác Nhận Mật Khẩu Mới</label>
+                <input type="password" id="new-password-confirmation" name="new_password_confirmation" required>
+                @error('new_password_confirmation')
+                    <span class="error show">{{ $message }}</span>
+                @enderror
+            </div>
+
+            <button type="submit" class="submit-btn">Thay Đổi Mật Khẩu</button>
+        </form>
+
         <a href="{{ route('home') }}" class="back-btn">Quay Về Trang Chủ</a>
     </div>
 
     <script>
+        // Handle Profile Update Form
         document.getElementById('user-profile-form').addEventListener('submit', async function (e) {
             e.preventDefault();
             const form = e.target;
@@ -220,6 +265,56 @@
                 }
             } catch (error) {
                 console.error('Update Error:', error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Lỗi kết nối',
+                    text: 'Đã có lỗi xảy ra: ' + error.message,
+                    confirmButtonText: 'OK'
+                });
+            }
+        });
+
+        // Handle Password Change Form
+        document.getElementById('change-password-form').addEventListener('submit', async function (e) {
+            e.preventDefault();
+            const form = e.target;
+            const formData = new FormData(form);
+            const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
+
+            try {
+                const response = await fetch(form.action, {
+                    method: 'POST', // Laravel converts PUT to POST internally
+                    headers: {
+                        'X-CSRF-TOKEN': csrfToken,
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'Accept': 'application/json'
+                    },
+                    body: formData
+                });
+
+                const data = await response.json();
+
+                if (response.ok && data.success) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Thành công',
+                        text: data.message || 'Thay đổi mật khẩu thành công!',
+                        confirmButtonText: 'OK'
+                    }).then(() => {
+                        form.reset(); // Clear form after success
+                    });
+                } else {
+                    const errors = data.errors || { general: 'Thay đổi mật khẩu thất bại. Vui lòng thử lại.' };
+                    let errorMessage = Object.values(errors).flat().join('<br>');
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Lỗi',
+                        html: errorMessage,
+                        confirmButtonText: 'OK'
+                    });
+                }
+            } catch (error) {
+                console.error('Password Change Error:', error);
                 Swal.fire({
                     icon: 'error',
                     title: 'Lỗi kết nối',

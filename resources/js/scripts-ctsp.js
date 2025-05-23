@@ -72,27 +72,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    if (addToCartBtn) {
-        addToCartBtn.addEventListener('click', async () => {
-            if (!window.isLoggedIn) {
-                showAlert('warning', 'Yêu cầu đăng nhập', 'Vui lòng đăng nhập để thêm sản phẩm vào giỏ hàng!', {
-                    willClose: () => window.location.href = '/login-register'
-                });
-                return;
-            }
-            addToCartBtn.disabled = true;
-            const productId = addToCartBtn.getAttribute('data-product-id');
-            const quantity = parseInt(quantityInput.value);
-            const data = await sendCartRequest('add', { product_id: productId, quantity });
-            addToCartBtn.disabled = false;
-            if (data?.success) {
-                showAlert('success', 'Thành công', 'Sản phẩm đã được thêm vào giỏ hàng!', { timer: 1500 });
-                document.querySelector('.cart-count').textContent = data.itemCount || 0;
-                document.querySelector('#cart-empty').style.display = data.itemCount > 0 ? 'none' : 'block';
-            }
-        });
-    }
-
     // Image zoom effect
     const mainImage = document.querySelector('.main-image img');
     if (mainImage) {
