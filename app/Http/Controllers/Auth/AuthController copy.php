@@ -7,7 +7,6 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
-use Brian2694\Toastr\Facades\Toastr;
 
 class AuthController extends Controller
 {
@@ -58,8 +57,6 @@ class AuthController extends Controller
                 'password' => $request->password,
                 'UserType' => 'Regular',
             ]);
-
-             Toastr::success('Đăng ký thành công!', 'Thông báo');
         } catch (\Exception $e) {
             \Log::error('Error creating user: ' . $e->getMessage());
             if ($request->ajax()) {
@@ -114,9 +111,6 @@ class AuthController extends Controller
 
             $user = Auth::user();
             \Log::info('Login successful for user: ' . $user->FullName);
-
-            Toastr::success('Đăng nhập thành công!', 'Thông báo');
-
             if ($user->UserType === 'Admin') {
                 return redirect()->route('admin.dashboard')->with('success', 'Đăng nhập thành công!');
             }

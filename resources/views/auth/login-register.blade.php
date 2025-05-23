@@ -6,6 +6,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="https://cdn.lineicons.com/4.0/lineicons.css" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
+
     {{-- <link rel="stylesheet" href="{{ asset('') }}"> --}}
     @vite(['resources/css/login-register.css'])
     <title>Login & Register</title>
@@ -123,6 +125,12 @@
             </div>
         </div>
     </div>
+
+     <!-- Toastr JS -->
+    <script src="{{ asset('vendor/toastr/toastr.min.js') }}"></script>
+
+    <!-- Render Toastr messages -->
+    {!! Toastr::message() !!}
 
     <script>
         const registerButton = document.getElementById("register");

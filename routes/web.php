@@ -34,7 +34,7 @@ Route::middleware(['auth'])->group(function () {
 });
 
 
-Route::prefix('admin')->middleware(['auth', 'admin'])->group(function () {
+Route::prefix('admin')->middleware(['admin'])->group(function () {
     Route::get('/', function () {
         return redirect()->route('admin.dashboard');
     })->name('admin');
