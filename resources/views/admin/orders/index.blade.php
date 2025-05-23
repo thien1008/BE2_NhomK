@@ -71,7 +71,7 @@
                                         data-bs-toggle="modal" data-bs-target="#editOrderModal">
                                     <i class="bi bi-pencil"></i> Sửa
                                 </button>
-                                <form action="{{ route('admin.orders.destroy', $order) }}" method="POST" style="display:inline;">
+                                <form action="{{ route('admin.orders.destroy', $order->OrderID) }}" method="POST" style="display:inline;">
                                     @csrf
                                     @method('DELETE')
                                     <button type="submit" class="btn btn-sm btn-danger"
