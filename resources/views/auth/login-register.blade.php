@@ -6,6 +6,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="https://cdn.lineicons.com/4.0/lineicons.css" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
+
     {{-- <link rel="stylesheet" href="{{ asset('') }}"> --}}
     @vite(['resources/css/login-register.css'])
     <title>Login & Register</title>
@@ -96,8 +98,8 @@
                 <button type="submit">Login</button>
                 <span>Or use your account</span>
                 <div class="social-container">
-                    <a href="#" class="social"><i class="lni lni-facebook-fill"></i></a>
-                    <a href="#" class="social"><i class="lni lni-google"></i></a>
+                    <a href="{{ route('auth.facebook') }}" class="social"><i class="lni lni-facebook-fill"></i></a>
+                    <a href="{{ route('auth.google') }}" class="social"><i class="lni lni-google"></i></a>
                     <a href="#" class="social"><i class="lni lni-linkedin-original"></i></a>
                 </div>
             </form>
@@ -123,6 +125,12 @@
             </div>
         </div>
     </div>
+
+     <!-- Toastr JS -->
+    <script src="{{ asset('vendor/toastr/toastr.min.js') }}"></script>
+
+    <!-- Render Toastr messages -->
+    {!! Toastr::message() !!}
 
     <script>
         const registerButton = document.getElementById("register");

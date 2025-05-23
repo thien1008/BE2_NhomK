@@ -7,6 +7,8 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
+use Brian2694\Toastr\Facades\Toastr;
+use Laravel\Socialite\Facades\Socialite;
 
 class AuthController extends Controller
 {
@@ -57,6 +59,8 @@ class AuthController extends Controller
                 'password' => $request->password,
                 'UserType' => 'Regular',
             ]);
+
+             Toastr::success('Đăng ký thành công!', 'Thông báo');
         } catch (\Exception $e) {
             \Log::error('Error creating user: ' . $e->getMessage());
             if ($request->ajax()) {
@@ -111,6 +115,9 @@ class AuthController extends Controller
 
             $user = Auth::user();
             \Log::info('Login successful for user: ' . $user->FullName);
+
+            Toastr::success('Đăng nhập thành công!', 'Thông báo');
+
             if ($user->UserType === 'Admin') {
                 return redirect()->route('admin.dashboard')->with('success', 'Đăng nhập thành công!');
             }
@@ -130,5 +137,90 @@ class AuthController extends Controller
         $request->session()->invalidate();
         $request->session()->regenerateToken();
         return redirect()->route('login-register');
+    }
+
+    public function redirectToGoogle()
+    {
+        return Socialite::driver('google')->redirect();
+    }
+
+    public function handleGoogleCallback()
+    {
+        try {
+            $googleUser = Socialite::driver('google')->user();
+            
+            $user = User::where('GoogleID', $googleUser->id)->orWhere('Email', $googleUser->email)->first();
+
+            if (!$user) {
+                $user = User::create([
+                    'FullName' => $googleUser->name,
+                    'Email' => $googleUser->email,
+                    'GoogleID' => $googleUser->id,
+                    'UserType' => 'Regular',
+                    'Phone' => null, // Phone is nullable in your schema
+                    'password' => bcrypt(str_random(16)), // Generate a random password
+                ]);
+            } else {
+                // Update GoogleID if the user exists via email but doesn't have GoogleID
+                if (!$user->GoogleID) {
+                    $user->update(['GoogleID' => $googleUser->id]);
+                }
+            }
+
+            Auth::login($user, true);
+            
+            if ($user->UserType === 'Admin') {
+                return redirect()->route('admin.dashboard');
+            }
+            return redirect()->route('home');
+
+        } catch (\Exception $e) {
+            \Log::error('Google login error: ' . $e->getMessage());
+            return redirect()->route('login-register')
+                ->withErrors(['login_error' => 'Có lỗi xảy ra khi đăng nhập bằng Google. Vui lòng thử lại.'])
+                ->with('active_tab', 'login');
+        }
+    }
+
+    public function redirectToFacebook()
+    {
+        return Socialite::driver('facebook')->redirect();
+    }
+
+    public function handleFacebookCallback()
+    {
+        try {
+            $facebookUser = Socialite::driver('facebook')->user();
+            
+            $user = User::where('FacebookID', $facebookUser->id)->orWhere('Email', $facebookUser->email)->first();
+
+            if (!$user) {
+                $user = User::create([
+                    'FullName' => $facebookUser->name,
+                    'Email' => $facebookUser->email,
+                    'FacebookID' => $facebookUser->id,
+                    'UserType' => 'Regular',
+                    'Phone' => null,
+                    'password' => bcrypt(str_random(16)),
+                ]);
+            } else {
+                if (!$user->FacebookID) {
+                    $user->update(['FacebookID' => $facebookUser->id]);
+                }
+            }
+
+            Auth::login($user, true);
+            
+            if ($user->UserType === 'Admin') {
+                return redirect()->route('admin.dashboard');
+            }
+            return redirect()->route('home');
+
+        } catch (\Exception $e) {
+            \Log::error('Facebook login error: ' . $e->getMessage());
+            return redirect()->route('login-register')
+                ->withErrors(['login_error' => 'Có lỗi xảy ra khi đăng nhập bằng Facebook. Vui lòng thử lại.'])
+                ->with('active_tab', 'login');
+        }
     }
 }
