@@ -91,3 +91,7 @@ Route::middleware(['web', 'auth'])->group(function () {
 Route::get('/reset-password', function () {
     return redirect()->route('password.request');
 })->middleware('guest');
+
+Route::get('/home/filter-products', [ProductController::class, 'filterHome']);
+
+Route::get('/products/filter', [ProductController::class, 'filterProductsAjax'])->name('products.filter');
