@@ -22,12 +22,6 @@ class Product extends Model
         return $this->belongsTo(Category::class, 'CategoryID', 'CategoryID');
     }
 
-    /**
-     * Find a product by ID with active discount
-     *
-     * @param int $id
-     * @return Product|null
-     */
     public static function findByIdWithDiscount($id)
     {
         $product = self::find($id);
@@ -49,22 +43,11 @@ class Product extends Model
         return $product;
     }
 
-    /**
-     * Get latest products
-     *
-     * @param int $limit
-     * @return \Illuminate\Database\Eloquent\Collection
-     */
     public static function getLatestProducts($limit = 3)
     {
         return self::latest('CreatedAt')->take($limit)->get();
     }
 
-    /**
-     * Get categories with their products for dropdown
-     *
-     * @return array
-     */
     public static function getCategoriesForDropdown()
     {
         $categoriesFromDB = [];
@@ -80,23 +63,11 @@ class Product extends Model
         return $categoriesFromDB;
     }
 
-    /**
-     * Get cart item count for the authenticated user
-     *
-     * @return int
-     */
     public static function getCartCount()
     {
         return Auth::check() ? Cart::where('UserID', Auth::id())->sum('Quantity') : 0;
     }
 
-    /**
-     * Search products by keyword
-     *
-     * @param string $keyword
-     * @param int $limit
-     * @return \Illuminate\Database\Eloquent\Collection
-     */
     public static function searchWithDiscount($keyword, $limit = 10)
     {
         $currentDate = now();
@@ -137,12 +108,11 @@ class Product extends Model
             });
     }
 
-
-    public static function getPaginatedWithDiscount($perPage = 12)
+    public static function getPaginatedWithDiscount($perPage = 10, $sort = '')
     {
         $currentDate = now();
 
-        return self::with([
+        $query = self::with([
             'discounts' => function ($query) use ($currentDate) {
                 $query->where('StartDate', '<=', $currentDate)
                     ->where('EndDate', '>=', $currentDate);
@@ -153,19 +123,25 @@ class Product extends Model
                 $query->select(DB::raw(1))
                     ->from('products')
                     ->whereColumn('products.ProductID', 'ProductID');
-            })
-            ->paginate($perPage)
-            ->through(function ($product) {
-                $discount = $product->discounts->first();
-
-                $product->CurrentPrice = $discount
-                    ? $product->Price * (1 - $discount->DiscountPercentage / 100)
-                    : $product->Price;
-
-                $product->DiscountPercentage = $discount ? $discount->DiscountPercentage : null;
-
-                return $product;
             });
+
+        if ($sort === 'price-asc') {
+            $query->orderBy('Price', 'asc');
+        } elseif ($sort === 'price-desc') {
+            $query->orderBy('Price', 'desc');
+        }
+
+        return $query->paginate($perPage)->through(function ($product) {
+            $discount = $product->discounts->first();
+
+            $product->CurrentPrice = $discount
+                ? $product->Price * (1 - $discount->DiscountPercentage / 100)
+                : $product->Price;
+
+            $product->DiscountPercentage = $discount ? $discount->DiscountPercentage : null;
+
+            return $product;
+        });
     }
 
     public static function getRandomProducts($limit = 4)
@@ -173,4 +149,36 @@ class Product extends Model
         return self::inRandomOrder()->take($limit)->get();
     }
 
+    public static function getByCategoryWithDiscount($categoryName, $sort = '', $perPage = 10)
+    {
+        $currentDate = now();
+
+        $query = self::with([
+            'discounts' => function ($query) use ($currentDate) {
+                $query->where('StartDate', '<=', $currentDate)
+                    ->where('EndDate', '>=', $currentDate);
+            }
+        ])
+            ->whereHas('category', function ($query) use ($categoryName) {
+                $query->where('CategoryName', $categoryName);
+            });
+
+        if ($sort === 'price-asc') {
+            $query->orderBy('Price', 'asc');
+        } elseif ($sort === 'price-desc') {
+            $query->orderBy('Price', 'desc');
+        }
+
+        return $query->paginate($perPage)->through(function ($product) {
+            $discount = $product->discounts->first();
+
+            $product->CurrentPrice = $discount
+                ? $product->Price * (1 - $discount->DiscountPercentage / 100)
+                : $product->Price;
+
+            $product->DiscountPercentage = $discount ? $discount->DiscountPercentage : null;
+
+            return $product;
+        });
+    }
 }

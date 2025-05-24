@@ -61,7 +61,6 @@
         </div>
 
         <nav>
-            <!-- Hamburger for mobile -->
             <div class="hamburger-menu" aria-label="Menu">
                 <span></span>
                 <span></span>
@@ -69,14 +68,12 @@
             </div>
             <span class="close-menu" aria-label="Close menu"></span>
 
-            <!-- Navigation links -->
             <a href="/" class="nav-link">Home</a>
             <a href="#" class="nav-link">Mac</a>
             <a href="#" class="nav-link">Iphone</a>
             <a href="#" class="nav-link">Watch</a>
             <a href="#" class="nav-link">AirPods</a>
 
-            <!-- Search box -->
             <div class="search-container">
                 <div class="search-box">
                     <span class="search-icon-input">
@@ -94,7 +91,6 @@
                 </div>
             </div>
 
-            <!-- Shopping cart -->
             @auth
                 <div class="cart-container active" aria-label="Shopping cart" role="button" tabindex="0"
                     aria-controls="cart-dropdown" aria-expanded="false">
@@ -131,7 +127,6 @@
                 </div>
             @endauth
 
-            <!-- User account -->
             @guest
                 <a href="{{ route('login-register') }}" id="login-btn" class="btn-primary">Đăng nhập</a>
             @else
@@ -143,6 +138,7 @@
                         @endif
                     </span>
                     <div class="user-dropdown" id="user-dropdown">
+                        <a href="{{ route('profile') }}">Thông tin cá nhân</a>
                         <a href="{{ route('logout') }}"
                             onclick="event.preventDefault(); document.getElementById('logout-form').submit();">Đăng xuất</a>
                         <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
@@ -153,22 +149,21 @@
             @endguest
         </nav>
     </header>
+    <div class="dropdown-overlay"></div>
 
     <!-- Cart Content -->
-    <section class="cart-section" style="margin-top: 250px;">
+    <section class="cart-section" style="margin-top: 100px;">
         <div class="container">
-            <div class="cart-header">
+            <div class="cart-header scroll-reveal">
                 <h1>Giỏ hàng của bạn</h1>
                 <span class="cart-count-display">{{ $cartCount }} sản phẩm</span>
             </div>
 
             <div class="cart-content">
-                <div class="cart-table">
+                <div class="cart-table scroll-reveal">
                     @if($cartItems->isEmpty())
                         <div class="cart-empty">
-                            <div class="empty-cart-icon">
-                                <i class="fas fa-shopping-cart fa-4x"></i>
-                            </div>
+                            <i class="fas fa-shopping-cart fa-4x"></i>
                             <h2>Giỏ hàng của bạn đang trống</h2>
                             <p>Hãy thêm sản phẩm vào giỏ hàng để tiếp tục mua sắm.</p>
                             <a href="/" class="btn-continue-shopping">Tiếp tục mua sắm</a>
@@ -189,7 +184,7 @@
                                         <a href="/product/{{ $item->ProductID }}" class="item-product-info">
                                             <div class="item-image">
                                                 <img src="{{ asset('images/' . $item->ImageURL) }}" alt="{{ $item->ProductName }}"
-                                                    width="80" height="80">
+                                                    width="80" height="80" loading="lazy">
                                             </div>
                                             <div class="item-details">
                                                 <h3 class="item-name">{{ $item->ProductName }}</h3>
@@ -205,8 +200,7 @@
                                             <span class="current-price">{{ number_format($item->CurrentPrice, 0, ',', '.') }}₫</span>
                                             @if($item->OriginalPrice > $item->CurrentPrice)
                                                 <span class="original-price">{{ number_format($item->OriginalPrice, 0, ',', '.') }}₫</span>
-                                                <span
-                                                    class="discount-badge">-{{ number_format(($item->OriginalPrice - $item->CurrentPrice) / $item->OriginalPrice * 100, 0) }}%</span>
+                                                <span class="discount-badge">-{{ number_format(($item->OriginalPrice - $item->CurrentPrice) / $item->OriginalPrice * 100, 0) }}%</span>
                                             @endif
                                         </div>
                                         <div class="item-quantity">
@@ -238,7 +232,7 @@
 
                         <div class="cart-actions">
                             <div class="cart-coupon">
-                                <input type="text" placeholder="Nhập mã giảm giá" id="coupon-code">
+                                <input type="text" placeholder="Nhập mã giảm giá" id="coupon-code" aria-label="Mã giảm giá">
                                 <button class="apply-coupon-btn">Áp dụng</button>
                             </div>
                             <div class="cart-update">
@@ -250,7 +244,7 @@
                 </div>
 
                 @if(!$cartItems->isEmpty())
-                    <div class="cart-summary">
+                    <div class="cart-summary scroll-reveal">
                         <h2>Tóm tắt đơn hàng</h2>
                         <div class="summary-row">
                             <span>Tạm tính:</span>
@@ -278,10 +272,10 @@
                         <div class="payment-methods">
                             <p>Phương thức thanh toán</p>
                             <div class="payment-icons">
-                                <img src="{{ asset('../img/payment-visa.png') }}" alt="Visa" width="40" height="25">
-                                <img src="{{ asset('../img/payment-mastercard.png') }}" alt="Mastercard" width="40" height="25">
-                                <img src="{{ asset('../img/payment-momo.png') }}" alt="MoMo" width="40" height="25">
-                                <img src="{{ asset('../img/payment-vnpay.png') }}" alt="VNPay" width="40" height="25">
+                                <img src="{{ asset('../img/payment-visa.png') }}" alt="Visa" width="40" height="25" loading="lazy">
+                                <img src="{{ asset('../img/payment-mastercard.png') }}" alt="Mastercard" width="40" height="25" loading="lazy">
+                                <img src="{{ asset('../img/payment-momo.png') }}" alt="MoMo" width="40" height="25" loading="lazy">
+                                <img src="{{ asset('../img/payment-vnpay.png') }}" alt="VNPay" width="40" height="25" loading="lazy">
                             </div>
                         </div>
                     </div>
@@ -297,11 +291,12 @@
             <div class="products-slider" role="list">
                 @foreach($relatedProducts as $product)
                     @if($product->ProductID && \App\Models\Product::where('ProductID', $product->ProductID)->exists())
-                        <a href="/product/{{ $product->ProductID }}" class="product-card" role="listitem"
-                            data-product-id="{{ $product->ProductID }}">
+                        <div class="product-card" role="listitem" data-product-id="{{ $product->ProductID }}">
                             <div class="product-image">
-                                <img src="{{ asset('images/' . $product->ImageURL) }}" alt="{{ e($product->ProductName) }}"
-                                    loading="lazy" width="200" height="200">
+                                <a href="/product/{{ $product->ProductID }}">
+                                    <img src="{{ asset('images/' . $product->ImageURL) }}" alt="{{ e($product->ProductName) }}"
+                                        loading="lazy" width="200" height="200">
+                                </a>
                                 @if($product->DiscountPercentage)
                                     <span class="product-badge">Sale!</span>
                                 @endif
@@ -317,7 +312,7 @@
                                 </div>
                             </div>
                             <div class="product-details">
-                                <div class="product-title">{{ e($product->ProductName) }}</div>
+                                <a href="/product/{{ $product->ProductID }}" class="product-title">{{ e($product->ProductName) }}</a>
                                 <div class="product-rating">
                                     <i class="fas fa-star"></i>
                                     <i class="fas fa-star"></i>
@@ -340,7 +335,7 @@
                                     <span>THÊM VÀO GIỎ</span>
                                 </button>
                             </div>
-                        </a>
+                        </div>
                     @else
                         <p class="no-product-id">Sản phẩm không hợp lệ (ID: {{ $product->ProductID ?? 'null' }}).</p>
                     @endif

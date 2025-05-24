@@ -232,7 +232,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (couponCode) {
             sendCartRequest('apply-coupon', { code: couponCode }, (data) => {
                 if (data.success) {
-                    document.querySelector('#discount-row').style.display = 'block';
+                    document.querySelector('#discount-row').style.display = 'flex';
                     document.querySelector('#discount-amount').textContent = formatVND(data.discount || 0);
                     document.querySelector('#total').textContent = formatVND(data.total);
                     showAlert('Thành công', 'Mã giảm giá đã được áp dụng!', 'success');
@@ -253,7 +253,6 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        // Kiểm tra giỏ hàng trước khi chuyển hướng
         sendCartRequest('get', {}, (data) => {
             if (data.itemCount === 0) {
                 showAlert('Lỗi', 'Giỏ hàng của bạn đang trống!');
@@ -274,4 +273,97 @@ document.addEventListener('DOMContentLoaded', () => {
         document.querySelector('#total').textContent = formatVND(initialData.total);
         document.querySelector('.cart-count-display').textContent = `${initialData.itemCount} sản phẩm`;
     }
+
+    // Search Functionality (aligned with home page)
+    const searchInput = document.getElementById('search-input');
+    const dropdownSearch = document.getElementById('dropdown-search');
+    const searchResults = document.getElementById('search-results');
+    const noResults = dropdownSearch?.querySelector('.no-results');
+
+    if (searchInput && dropdownSearch && searchResults) {
+        const toggleDropdown = (dropdown, state) => {
+            if (dropdown) {
+                dropdown.classList.toggle('active', state);
+                const trigger = dropdown.previousElementSibling || dropdown.parentElement;
+                trigger?.setAttribute('aria-expanded', state);
+            }
+        };
+
+        const debounce = (func, wait) => {
+            let timeout;
+            return (...args) => {
+                clearTimeout(timeout);
+                timeout = setTimeout(() => func(...args), wait);
+            };
+        };
+
+        searchInput.addEventListener('focus', () => {
+            toggleDropdown(dropdownSearch, true);
+        });
+
+        const performSearch = debounce(async value => {
+            if (!value.trim()) {
+                searchResults.innerHTML = '';
+                noResults && (noResults.style.display = 'block');
+                toggleDropdown(dropdownSearch, false);
+                return;
+            }
+
+            try {
+                const res = await fetch(`?search=${encodeURIComponent(value)}`, {
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                });
+                const data = await res.json();
+                searchResults.innerHTML = '';
+                noResults && (noResults.style.display = data.length ? 'none' : 'block');
+
+                const regex = new RegExp(`(${value.trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
+                data.forEach(product => {
+                    const result = document.createElement('a');
+                    result.classList.add('search-result');
+                    result.href = `/product/${product.ProductID}`;
+                    const currentPrice = !isNaN(Number(product.CurrentPrice))
+                        ? Number(product.CurrentPrice).toLocaleString()
+                        : '0';
+                    result.innerHTML = `
+                        <img src="/images/${product.ImageURL}" alt="${product.ProductName}">
+                        <div class="search-result-details">
+                            <div class="search-result-name">${product.ProductName.replace(regex, '<strong>$1</strong>')}</div>
+                            <div class="search-result-price">
+                                ${currentPrice}₫
+                                ${product.DiscountPercentage ? `<span class="search-result-discount">-${product.DiscountPercentage}%</span>` : ''}
+                            </div>
+                        </div>
+                    `;
+                    searchResults.appendChild(result);
+                });
+
+                toggleDropdown(dropdownSearch, true);
+            } catch (err) {
+                console.error('Search Error:', err);
+                showAlert('Lỗi', 'Đã có lỗi khi tìm kiếm.');
+            }
+        }, 300);
+
+        searchInput.addEventListener('input', e => {
+            searchInput.setAttribute('placeholder', e.target.value.trim() ? '' : 'Tìm kiếm sản phẩm...');
+            performSearch(e.target.value);
+        });
+
+        document.addEventListener('click', e => {
+            if (!e.target.closest('.search-container')) toggleDropdown(dropdownSearch, false);
+        });
+    }
+
+    // Scroll Reveal
+    const observer = new IntersectionObserver((entries, obs) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('visible');
+                obs.unobserve(entry.target);
+            }
+        });
+    }, { threshold: 0.1 });
+
+    document.querySelectorAll('.scroll-reveal').forEach(el => observer.observe(el));
 });

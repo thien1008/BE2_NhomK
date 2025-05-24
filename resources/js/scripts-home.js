@@ -51,22 +51,22 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Xử lý mouseleave trên toàn bộ header
     const header = document.querySelector('header');
-    header.addEventListener('mouseleave', (e) => {
-        const dropdowns = document.querySelectorAll('.dropdown-menu');
-        let isMouseInDropdown = false;
+    if (header) {
+        header.addEventListener('mouseleave', (e) => {
+            const dropdowns = document.querySelectorAll('.dropdown-menu');
+            let isMouseInDropdown = false;
 
-        // Kiểm tra xem chuột có đang ở trong một dropdown-menu (navigation) hay không
-        dropdowns.forEach(dropdown => {
-            if (dropdown.contains(e.relatedTarget)) {
-                isMouseInDropdown = true;
+            dropdowns.forEach(dropdown => {
+                if (dropdown.contains(e.relatedTarget)) {
+                    isMouseInDropdown = true;
+                }
+            });
+
+            if (!isMouseInDropdown) {
+                closeAllDropdowns();
             }
         });
-
-        // Chỉ đóng các dropdown-menu và overlay nếu chuột không ở trong dropdown-menu
-        if (!isMouseInDropdown) {
-            closeAllDropdowns();
-        }
-    });
+    }
 
     // Xử lý mouseleave trên các dropdown-menu (navigation)
     document.querySelectorAll('.dropdown-menu').forEach(dropdown => {
@@ -394,20 +394,24 @@ document.addEventListener('DOMContentLoaded', () => {
         document.querySelector('.product-modal-close')?.addEventListener('click', () =>
             document.querySelector('.product-modal').classList.remove('active'));
 
-        document.querySelector('.products-slider').addEventListener('click', (e) => {
-            const card = e.target.closest('.product-card');
-            if (card && !e.target.closest('.product-action-btn, .add-to-cart, .quantity-btn, .quantity-input')) {
-                const href = card.querySelector('a[href]')?.getAttribute('href');
-                const productId = card.getAttribute('data-product-id');
-                if (href && href !== '/product/' && href !== '/product/null' && productId && productId !== 'null') {
-                    window.location.href = href;
-                } else {
-                    console.error('Navigation failed:', { href, productId });
-                    showAlert('error', 'Lỗi', 'Sản phẩm không hợp lệ. Vui lòng thử lại.');
+        const productsSlider = document.querySelector('.products-slider');
+        if (productsSlider) {
+            productsSlider.addEventListener('click', (e) => {
+                const card = e.target.closest('.product-card');
+                if (card && !e.target.closest('.product-action-btn, .add-to-cart, .quantity-btn, .quantity-input')) {
+                    const href = card.querySelector('a[href]')?.getAttribute('href');
+                    const productId = card.getAttribute('data-product-id');
+                    if (href && href !== '/product/' && href !== '/product/null' && productId && productId !== 'null') {
+                        window.location.href = href;
+                    } else {
+                        console.error('Navigation failed:', { href, productId });
+                        showAlert('error', 'Lỗi', 'Sản phẩm không hợp lệ. Vui lòng thử lại.');
+                    }
                 }
-            }
-        });
+            });
+        }
     };
+
 
     if (cartItems) {
         cartItems.addEventListener('click', e => {
