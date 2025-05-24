@@ -1,6 +1,5 @@
 ﻿CREATE DATABASE ECommerceDB;
 USE ECommerceDB;
--- gxzv nnnh mhtk iwvu
 -- Bảng Người Dùng
 CREATE TABLE Users (
     UserID INT AUTO_INCREMENT PRIMARY KEY,
@@ -9,10 +8,10 @@ CREATE TABLE Users (
     password VARCHAR(255) NOT NULL,
     Phone VARCHAR(15) UNIQUE,
     UserType ENUM('Regular', 'VIP', 'Admin') DEFAULT 'Regular',
+    GoogleID VARCHAR(255) NULL UNIQUE;
+    FacebookID VARCHAR(255) NULL UNIQUE;
     CreatedAt DATETIME DEFAULT CURRENT_TIMESTAMP
 );
-
-ALTER TABLE Users ADD COLUMN GoogleID VARCHAR(255) NULL UNIQUE;
 
 -- Bảng Danh Mục Sản Phẩm
 CREATE TABLE Categories (
@@ -101,7 +100,7 @@ CREATE TABLE UserCoupons (
 CREATE TABLE password_resets (
   email VARCHAR(255) NOT NULL,
   token VARCHAR(255) NOT NULL,
-  expires_at DATETIME NOT NULL
+  create_at DATETIME NOT NULL
 );
 
 

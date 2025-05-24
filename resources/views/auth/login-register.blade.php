@@ -67,9 +67,8 @@
                 <button type="submit">Register</button>
                 <span>Or use your account</span>
                 <div class="social-container">
-                    <a href="#" class="social"><i class="lni lni-facebook-fill"></i></a>
-                    <a href="#" class="social"><i class="lni lni-google"></i></a>
-                    <a href="#" class="social"><i class="lni lni-linkedin-original"></i></a>
+                    <a href="{{ route('auth.facebook') }}" class="social"><i class="lni lni-facebook-fill"></i></a>
+                    <a href="{{ route('auth.google') }}" class="social"><i class="lni lni-google"></i></a>
                 </div>
             </form>
         </div>
@@ -100,7 +99,6 @@
                 <div class="social-container">
                     <a href="{{ route('auth.facebook') }}" class="social"><i class="lni lni-facebook-fill"></i></a>
                     <a href="{{ route('auth.google') }}" class="social"><i class="lni lni-google"></i></a>
-                    <a href="#" class="social"><i class="lni lni-linkedin-original"></i></a>
                 </div>
             </form>
         </div>
