@@ -124,11 +124,11 @@
         </div>
     </div>
 
-     <!-- Toastr JS -->
+     {{-- <!-- Toastr JS -->
     <script src="{{ asset('vendor/toastr/toastr.min.js') }}"></script>
 
     <!-- Render Toastr messages -->
-    {!! Toastr::message() !!}
+    {!! Toastr::message() !!} --}}
 
     <script>
         const registerButton = document.getElementById("register");
