@@ -5,9 +5,13 @@ namespace App\Http\Controllers;
 use App\Models\Cart;
 use App\Models\Category;
 use App\Models\Product;
+use App\Models\NewsletterSubscription;
+use App\Mail\NewsletterSubscriptionConfirmation;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Validator;
 
 class HomeController extends Controller
 {
@@ -80,5 +84,43 @@ class HomeController extends Controller
             'cartCount',
             'user'
         ));
+    }
+
+    public function subscribeNewsletter(Request $request)
+    {
+        if (!$request->ajax()) {
+            return response()->json(['error' => 'Invalid request'], 400);
+        }
+
+        $validator = Validator::make($request->all(), [
+            'email' => 'required|email|unique:newsletter_subscriptions,email'
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'error' => $validator->errors()->first()
+            ], 422);
+        }
+
+        try {
+            $email = $request->input('email');
+
+            // Save to database
+            NewsletterSubscription::create([
+                'email' => $email,
+                'is_subscribed' => true
+            ]);
+
+            // Send confirmation email
+            Mail::to($email)->send(new NewsletterSubscriptionConfirmation($email));
+
+            return response()->json([
+                'success' => 'Thank you for subscribing to our newsletter!'
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => 'An error occurred while subscribing. Please try again later.'
+            ], 500);
+        }
     }
 }

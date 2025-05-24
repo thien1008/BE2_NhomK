@@ -81,6 +81,8 @@ Route::get('/product/{id}', [ProductController::class, 'show'])->name('product.s
 Route::get('/products/search', [ProductController::class, 'search'])->name('product.search');
 Route::get('/products/all', [HomeController::class, 'index'])->name('products.all');
 Route::get('/category/{category}', [CategoryController::class, 'show'])->name('category.show');
+// gửi bản tin
+Route::post('/newsletter/subscribe', [HomeController::class, 'subscribeNewsletter'])->name('newsletter.subscribe');
 
 Route::get('/order/details/{order_id}', [CheckoutController::class, 'showOrderDetails'])->name('order.details');
 
