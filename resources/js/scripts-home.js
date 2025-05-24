@@ -550,4 +550,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }, { threshold: 0.1 });
 
     document.querySelectorAll('.scroll-reveal').forEach(el => observer.observe(el));
+
+    
 });
