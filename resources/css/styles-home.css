@@ -37,6 +37,41 @@ body {
   padding: 0 15px;
 }
 
+/* Filter Section */
+.filter-section {
+  padding: 20px 0;
+}
+
+.filter-container {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  background: var(--background-alt);
+  padding: 15px;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+
+.filter-container h3 {
+  font: 600 18px var(--font-heading);
+  color: var(--text-primary);
+}
+
+.filter-container select {
+  padding: 10px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  font-size: 14px;
+  background: var(--background);
+  cursor: pointer;
+  transition: border-color 0.3s ease;
+}
+
+.filter-container select:focus {
+  border-color: var(--primary);
+  outline: none;
+}
+
 /* Enhanced Hotline Bar */
 .hotline-bar {
   background: linear-gradient(90deg, #000000, #2d2d2d);
@@ -228,7 +263,7 @@ header nav button:hover::after {
   visibility: hidden;
   transform: translateY(0);
   transition: opacity 0.3s ease, transform 0.3s ease;
-  border-left: 1px solid var(--border);
+  border-left: 1pxindicator none;
   border-right: 1px solid var(--border);
   border-bottom: 1px solid var(--border);
   border-top: 0;
@@ -1075,7 +1110,17 @@ header nav button:hover::after {
   line-height: 1.3;
   height: 40px;
   overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
   color: var(--text-primary);
+  text-decoration: none;
+  transition: color 0.3s ease;
+}
+
+.product-title:hover {
+  color: var(--primary);
 }
 
 .product-rating {
@@ -1086,11 +1131,202 @@ header nav button:hover::after {
 
 .price-container {
   margin-top: auto;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
 }
 
 .current-price {
   font: bold 18px var(--font-heading);
   color: var(--primary);
+}
+
+.original-price {
+  text-decoration: line-through;
+  color: #999;
+  font-size: 14px;
+}
+
+.discount-badge {
+  background: var(--primary);
+  color: #fff;
+  padding: 3px 6px;
+  border-radius: 4px;
+  font: bold 12px var(--font-heading);
+}
+
+.add-to-cart {
+  background: var(--primary);
+  border: none;
+  border-radius: 50px;
+  padding: 10px 15px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 12px;
+  cursor: pointer;
+  font: 600 14px var(--font-heading);
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+  color: #fff;
+}
+
+.add-to-cart i {
+  transition: transform 0.3s ease;
+}
+
+.add-to-cart:hover {
+  background: var(--primary-dark);
+  transform: scale(1.05);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.add-to-cart:hover i {
+  transform: rotate(360deg);
+}
+
+/* Filter Section */
+.filter-section {
+  padding: 20px 0;
+}
+
+.filter-container {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  background: var(--background);
+  padding: 15px;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+
+.filter-container h3 {
+  font: 600 18px var(--font-heading);
+  color: var(--text-primary);
+}
+
+.filter-container select {
+  padding: 10px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  font-size: 14px;
+  background: var(--background-alt);
+  cursor: pointer;
+  transition: border-color 0.3s ease;
+}
+
+.filter-container select:focus {
+  border-color: var(--primary);
+  outline: none;
+}
+
+/* View All Button */
+.view-all {
+  text-align: center;
+  margin-top: 25px;
+}
+
+.view-all-button {
+  background: transparent;
+  border: 2px solid #fff;
+  color: #fff;
+  padding: 10px 25px;
+  border-radius: 30px;
+  cursor: pointer;
+  font: 600 15px var(--font-heading);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.3s ease;
+  text-decoration: none;
+}
+
+.view-all-button:hover {
+  background: rgba(255, 255, 255, 0.2);
+  transform: translateY(-3px);
+}
+
+/* No Products Message */
+.no-products,
+.no-product-id {
+  text-align: center;
+  color: var(--text-secondary);
+  font-size: 16px;
+  padding: 20px;
+  width: 100%;
+}
+
+/* Responsive Adjustments for Products */
+@media (max-width: 1024px) {
+  .products-slider {
+    gap: 15px;
+  }
+
+  .product-card {
+    flex: 0 0 250px;
+  }
+
+  .promo-title {
+    font-size: 22px;
+  }
+
+  .filter-container {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+
+@media (max-width: 768px) {
+  .products-section {
+    padding: 40px 0;
+  }
+
+  .promo-container {
+    padding: 20px;
+  }
+
+  .product-card {
+    flex: 0 0 220px;
+  }
+
+  .product-image {
+    height: 180px;
+  }
+
+  .view-all-button {
+    padding: 10px 20px;
+    font-size: 14px;
+  }
+
+  .filter-container select {
+    width: 100%;
+  }
+}
+
+@media (max-width: 576px) {
+  .product-card {
+    flex: 0 0 100%;
+  }
+
+  .product-image {
+    height: 160px;
+  }
+
+  .promo-title {
+    font-size: 20px;
+  }
+
+  .current-price {
+    font-size: 16px;
+  }
+
+  .add-to-cart {
+    font-size: 13px;
+    padding: 8px;
+  }
 }
 
 .original-price {

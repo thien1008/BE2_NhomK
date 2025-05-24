@@ -2,7 +2,6 @@
 
 @push('head')
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <!-- Font Awesome and Google Fonts with display=swap for better performance -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css"
         crossorigin="anonymous" referrerpolicy="no-referrer" />
     <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@400;500;600&family=Roboto:wght@400;500;700&display=swap"
@@ -10,7 +9,6 @@
 
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
-    <!-- Preload critical assets -->
     <div class="hero-section scroll-reveal" style="margin-top: -230px;">
         <link rel="preload" href="{{ asset('../img/banner1.avif') }}" as="image">
     </div>
@@ -20,7 +18,6 @@
         window.isLoggedIn = @json(Auth::check());
     </script>
 
-    <!-- Vite Assets -->
     @vite([
         'resources/css/styles-home.css',
         'resources/js/scripts-home.js',
@@ -65,7 +62,6 @@
         </div>
 
         <nav>
-            <!-- Hamburger for mobile -->
             <div class="hamburger-menu" aria-label="Menu">
                 <span></span>
                 <span></span>
@@ -73,14 +69,12 @@
             </div>
             <span class="close-menu" aria-label="Close menu"></span>
 
-            <!-- Navigation links -->
             <a href="#" class="nav-link">Home</a>
-            <a href="#" class="nav-link">Mac</a>
-            <a href="#" class="nav-link">Iphone</a>
-            <a href="#" class="nav-link">Watch</a>
-            <a href="#" class="nav-link">AirPods</a>
+            <a href="/category/Mac" class="nav-link">Mac</a>
+            <a href="/category/iPhone" class="nav-link">Iphone</a>
+            <a href="/category/Watch" class="nav-link">Watch</a>
+            <a href="/category/AirPods" class="nav-link">AirPods</a>
 
-            <!-- Search box -->
             <div class="search-container">
                 <div class="search-box">
                     <span class="search-icon-input">
@@ -98,7 +92,6 @@
                 </div>
             </div>
 
-            <!-- Shopping cart -->
             @auth
                 <div class="cart-container" aria-label="Shopping cart" role="button" tabindex="0" aria-controls="cart-dropdown"
                     aria-expanded="false">
@@ -135,7 +128,6 @@
                 </div>
             @endauth
 
-            <!-- User account -->
             @guest
                 <a href="{{ route('login-register') }}" id="login-btn" class="btn-primary">Đăng nhập</a>
             @else
@@ -178,22 +170,27 @@
         </div>
     </section>
 
-    <!-- Products section -->
+    <!-- Filter Section -->
+    <section class="filter-section scroll-reveal">
+        <div class="container">
+            <div class="filter-container">
+                <h3>Bộ lọc giá</h3>
+                <select id="price-filter" onchange="applyFilter()">
+                    <option value="">Mặc định</option>
+                    <option value="price-asc">Giá: Thấp đến cao</option>
+                    <option value="price-desc">Giá: Cao đến thấp</option>
+                </select>
+            </div>
+        </div>
+    </section>
+
+    <!-- All Products Section -->
     <section class="products-section scroll-reveal">
         <div class="promo-container">
             <div class="promo-title">
                 <span class="icon">⭐</span>
-                <span class="icon">⚡</span>
-                SẢN PHẨM NỔI BẬT
+                TẤT CẢ SẢN PHẨM
                 <span class="icon">🔥</span>
-            </div>
-            <div class="navigation-buttons">
-                <button class="nav-button prev" aria-label="Previous">
-                    <i class="fas fa-chevron-left"></i>
-                </button>
-                <button class="nav-button next" aria-label="Next">
-                    <i class="fas fa-chevron-right"></i>
-                </button>
             </div>
             <div class="products-slider" role="list">
                 @if($products->isEmpty())
@@ -252,13 +249,316 @@
                     @endforeach
                 @endif
             </div>
-            <!-- Pagination Links -->
             <div class="pagination">
-                {{ $products->links() }}
+                {{ $products->appends(['sort' => request()->query('sort')])->links() }}
             </div>
             <div class="view-all">
-                <a href="#" class="view-all-button">
+                <a href="/products/all" class="view-all-button">
                     <i class="fas fa-list"></i> XEM TẤT CẢ SẢN PHẨM
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Mac Products Section -->
+    <section class="products-section scroll-reveal">
+        <div class="promo-container">
+            <div class="promo-title">
+                <span class="icon">💻</span>
+                SẢN PHẨM MAC
+                <span class="icon">🔥</span>
+            </div>
+            <div class="products-slider" role="list">
+                @if($macProducts->isEmpty())
+                    <p class="no-products">Không có sản phẩm Mac nào để hiển thị.</p>
+                @else
+                    @foreach($macProducts as $product)
+                        @if($product->ProductID && \App\Models\Product::where('ProductID', $product->ProductID)->exists())
+                            <div class="product-card" role="listitem" data-product-id="{{ $product->ProductID }}">
+                                <div class="product-image">
+                                    <a href="/product/{{ $product->ProductID }}">
+                                        <img src="{{ asset('images/' . $product->ImageURL) }}" alt="{{ e($product->ProductName) }}"
+                                            loading="lazy" width="200" height="200">
+                                    </a>
+                                    @if($product->DiscountPercentage)
+                                        <span class="product-badge">Sale!</span>
+                                    @endif
+                                    <div class="product-actions">
+                                        <button class="product-action-btn quick-view" data-product-id="{{ $product->ProductID }}"
+                                            aria-label="Quick view">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                        <button class="product-action-btn add-to-wishlist" data-product-id="{{ $product->ProductID }}"
+                                            aria-label="Add to wishlist">
+                                            <i class="far fa-heart"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="product-details">
+                                    <a href="/product/{{ $product->ProductID }}"
+                                        class="product-title">{{ e($product->ProductName) }}</a>
+                                    <div class="product-rating">
+                                        <i class="fas fa-star"></i>
+                                        <i class="fas fa-star"></i>
+                                        <i class="fas fa-star"></i>
+                                        <i class="fas fa-star"></i>
+                                        <i class="fas fa-star-half-alt"></i>
+                                    </div>
+                                    <div class="price-container">
+                                        <span class="current-price">{{ number_format($product->CurrentPrice, 0) }}₫</span>
+                                        @if($product->DiscountPercentage)
+                                            <div>
+                                                <span class="original-price">{{ number_format($product->Price, 0) }}₫</span>
+                                                <span class="discount-badge">-{{ number_format($product->DiscountPercentage, 0) }}%</span>
+                                            </div>
+                                        @endif
+                                    </div>
+                                    <button class="add-to-cart" data-product-id="{{ $product->ProductID }}"
+                                        data-name="{{ e($product->ProductName) }}" data-price="{{ $product->CurrentPrice }}">
+                                        <i class="fas fa-shopping-cart"></i> <span>THÊM VÀO GIỎ</span>
+                                    </button>
+                                </div>
+                            </div>
+                        @else
+                            <p class="no-product-id">Sản phẩm không hợp lệ (ID: {{ $product->ProductID ?? 'null' }}).</p>
+                        @endif
+                    @endforeach
+                @endif
+            </div>
+            <div class="pagination">
+                {{ $macProducts->appends(['sort' => request()->query('sort')])->links() }}
+            </div>
+            <div class="view-all">
+                <a href="/category/Mac" class="view-all-button">
+                    <i class="fas fa-list"></i> XEM TẤT CẢ SẢN PHẨM MAC
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- iPhone Products Section -->
+    <section class="products-section scroll-reveal">
+        <div class="promo-container">
+            <div class="promo-title">
+                <span class="icon">📱</span>
+                SẢN PHẨM IPHONE
+                <span class="icon">🔥</span>
+            </div>
+            <div class="products-slider" role="list">
+                @if($iphoneProducts->isEmpty())
+                    <p class="no-products">Không có sản phẩm iPhone nào để hiển thị.</p>
+                @else
+                    @foreach($iphoneProducts as $product)
+                        @if($product->ProductID && \App\Models\Product::where('ProductID', $product->ProductID)->exists())
+                            <div class="product-card" role="listitem" data-product-id="{{ $product->ProductID }}">
+                                <div class="product-image">
+                                    <a href="/product/{{ $product->ProductID }}">
+                                        <img src="{{ asset('images/' . $product->ImageURL) }}" alt="{{ e($product->ProductName) }}"
+                                            loading="lazy" width="200" height="200">
+                                    </a>
+                                    @if($product->DiscountPercentage)
+                                        <span class="product-badge">Sale!</span>
+                                    @endif
+                                    <div class="product-actions">
+                                        <button class="product-action-btn quick-view" data-product-id="{{ $product->ProductID }}"
+                                            aria-label="Quick view">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                        <button class="product-action-btn add-to-wishlist" data-product-id="{{ $product->ProductID }}"
+                                            aria-label="Add to wishlist">
+                                            <i class="far fa-heart"></i>
+                                        </button>
+                                    </div>
+                </div>
+                                <div class="product-details">
+                                    <a href="/product/{{ $product->ProductID }}"
+                                        class="product-title">{{ e($product->ProductName) }}</a>
+                                    <div class="product-rating">
+                                        <i class="fas fa-star"></i>
+                                        <i class="fas fa-star"></i>
+                                        <i class="fas fa-star"></i>
+                                        <i class="fas fa-star"></i>
+                                        <i class="fas fa-star-half-alt"></i>
+                                    </div>
+                                    <div class="price-container">
+                                        <span class="current-price">{{ number_format($product->CurrentPrice, 0) }}₫</span>
+                                        @if($product->DiscountPercentage)
+                                            <div>
+                                                <span class="original-price">{{ number_format($product->Price, 0) }}₫</span>
+                                                <span class="discount-badge">-{{ number_format($product->DiscountPercentage, 0) }}%</span>
+                                            </div>
+                                        @endif
+                                    </div>
+                                    <button class="add-to-cart" data-product-id="{{ $product->ProductID }}"
+                                        data-name="{{ e($product->ProductName) }}" data-price="{{ $product->CurrentPrice }}">
+                                        <i class="fas fa-shopping-cart"></i> <span>THÊM VÀO GIỎ</span>
+                                    </button>
+                                </div>
+                            </div>
+                        @else
+                            <p class="no-product-id">Sản phẩm không hợp lệ (ID: {{ $product->ProductID ?? 'null' }}).</p>
+                        @endif
+                    @endforeach
+                @endif
+            </div>
+            <div class="pagination">
+                {{ $iphoneProducts->appends(['sort' => request()->query('sort')])->links() }}
+            </div>
+            <div class="view-all">
+                <a href="/category/iPhone" class="view-all-button">
+                    <i class="fas fa-list"></i> XEM TẤT CẢ SẢN PHẨM IPHONE
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Watch Products Section -->
+    <section class="products-section scroll-reveal">
+        <div class="promo-container">
+            <div class="promo-title">
+                <span class="icon">⌚</span>
+                SẢN PHẨM WATCH
+                <span class="icon">🔥</span>
+            </div>
+            <div class="products-slider" role="list">
+                @if($watchProducts->isEmpty())
+                    <p class="no-products">Không có sản phẩm Watch nào để hiển thị.</p>
+                @else
+                    @foreach($watchProducts as $product)
+                        @if($product->ProductID && \App\Models\Product::where('ProductID', $product->ProductID)->exists())
+                            <div class="product-card" role="listitem" data-product-id="{{ $product->ProductID }}">
+                                <div class="product-image">
+                                    <a href="/product/{{ $product->ProductID }}">
+                                        <img src="{{ asset('images/' . $product->ImageURL) }}" alt="{{ e($product->ProductName) }}"
+                                            loading="lazy" width="200" height="200">
+                                    </a>
+                                    @if($product->DiscountPercentage)
+                                        <span class="product-badge">Sale!</span>
+                                    @endif
+                                    <div class="product-actions">
+                                        <button class="product-action-btn quick-view" data-product-id="{{ $product->ProductID }}"
+                                            aria-label="Quick view">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                        <button class="product-action-btn add-to-wishlist" data-product-id="{{ $product->ProductID }}"
+                                            aria-label="Add to wishlist">
+                                            <i class="far fa-heart"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="product-details">
+                                    <a href="/product/{{ $product->ProductID }}"
+                                        class="product-title">{{ e($product->ProductName) }}</a>
+                                    <div class="product-rating">
+                                        <i class="fas fa-star"></i>
+                                        <i class="fas fa-star"></i>
+                                        <i class="fas fa-star"></i>
+                                        <i class="fas fa-star"></i>
+                                        <i class="fas fa-star-half-alt"></i>
+                                    </div>
+                                    <div class="price-container">
+                                        <span class="current-price">{{ number_format($product->CurrentPrice, 0) }}₫</span>
+                                        @if($product->DiscountPercentage)
+                                            <div>
+                                                <span class="original-price">{{ number_format($product->Price, 0) }}₫</span>
+                                                <span class="discount-badge">-{{ number_format($product->DiscountPercentage, 0) }}%</span>
+                                            </div>
+                                        @endif
+                                    </div>
+                                    <button class="add-to-cart" data-product-id="{{ $product->ProductID }}"
+                                        data-name="{{ e($product->ProductName) }}" data-price="{{ $product->CurrentPrice }}">
+                                        <i class="fas fa-shopping-cart"></i> <span>THÊM VÀO GIỎ</span>
+                                    </button>
+                                </div>
+                            </div>
+                        @else
+                            <p class="no-product-id">Sản phẩm không hợp lệ (ID: {{ $product->ProductID ?? 'null' }}).</p>
+                        @endif
+                    @endforeach
+                @endif
+            </div>
+            <div class="pagination">
+                {{ $watchProducts->appends(['sort' => request()->query('sort')])->links() }}
+            </div>
+            <div class="view-all">
+                <a href="/category/Watch" class="view-all-button">
+                    <i class="fas fa-list"></i> XEM TẤT CẢ SẢN PHẨM WATCH
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- AirPods Products Section -->
+    <section class="products-section scroll-reveal">
+        <div class="promo-container">
+            <div class="promo-title">
+                <span class="icon">🎧</span>
+                SẢN PHẨM AIRPODS
+                <span class="icon">🔥</span>
+            </div>
+            <div class="products-slider" role="list">
+                @if($airpodsProducts->isEmpty())
+                    <p class="no-products">Không có sản phẩm AirPods nào để hiển thị.</p>
+                @else
+                    @foreach($airpodsProducts as $product)
+                        @if($product->ProductID && \App\Models\Product::where('ProductID', $product->ProductID)->exists())
+                            <div class="product-card" role="listitem" data-product-id="{{ $product->ProductID }}">
+                                <div class="product-image">
+                                    <a href="/product/{{ $product->ProductID }}">
+                                        <img src="{{ asset('images/' . $product->ImageURL) }}" alt="{{ e($product->ProductName) }}"
+                                            loading="lazy" width="200" height="200">
+                                    </a>
+                                    @if($product->DiscountPercentage)
+                                        <span class="product-badge">Sale!</span>
+                                    @endif
+                                    <div class="product-actions">
+                                        <button class="product-action-btn quick-view" data-product-id="{{ $product->ProductID }}"
+                                            aria-label="Quick view">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                        <button class="product-action-btn add-to-wishlist" data-product-id="{{ $product->ProductID }}"
+                                            aria-label="Add to wishlist">
+                                            <i class="far fa-heart"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="product-details">
+                                    <a href="/product/{{ $product->ProductID }}"
+                                        class="product-title">{{ e($product->ProductName) }}</a>
+                                    <div class="product-rating">
+                                        <i class="fas fa-star"></i>
+                                        <i class="fas fa-star"></i>
+                                        <i class="fas fa-star"></i>
+                                        <i class="fas fa-star"></i>
+                                        <i class="fas fa-star-half-alt"></i>
+                                    </div>
+                                    <div class="price-container">
+                                        <span class="current-price">{{ number_format($product->CurrentPrice, 0) }}₫</span>
+                                        @if($product->DiscountPercentage)
+                                            <div>
+                                                <span class="original-price">{{ number_format($product->Price, 0) }}₫</span>
+                                                <span class="discount-badge">-{{ number_format($product->DiscountPercentage, 0) }}%</span>
+                                            </div>
+                                        @endif
+                                    </div>
+                                    <button class="add-to-cart" data-product-id="{{ $product->ProductID }}"
+                                        data-name="{{ e($product->ProductName) }}" data-price="{{ $product->CurrentPrice }}">
+                                        <i class="fas fa-shopping-cart"></i> <span>THÊM VÀO GIỎ</span>
+                                    </button>
+                                </div>
+                            </div>
+                        @else
+                            <p class="no-product-id">Sản phẩm không hợp lệ (ID: {{ $product->ProductID ?? 'null' }}).</p>
+                        @endif
+                    @endforeach
+                @endif
+            </div>
+            <div class="pagination">
+                {{ $airpodsProducts->appends(['sort' => request()->query('sort')])->links() }}
+            </div>
+            <div class="view-all">
+                <a href="/category/AirPods" class="view-all-button">
+                    <i class="fas fa-list"></i> XEM TẤT CẢ SẢN PHẨM AIRPODS
                 </a>
             </div>
         </div>

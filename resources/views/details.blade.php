@@ -2,8 +2,10 @@
 
 @push('head')
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
-    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@400;500;600&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css"
+        crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@400;500;600&family=Roboto:wght@400;500;700&display=swap"
+        rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
         window.isLoggedIn = @json($isLoggedIn);
@@ -32,15 +34,18 @@
             </div>
             <div class="header-slogan">
                 <div class="slogan-item">
-                    <img src="{{ asset('../img/header1.webp') }}" alt="Chất lượng" class="slogan-icon" width="20" height="20" loading="lazy" />
+                    <img src="{{ asset('../img/header1.webp') }}" alt="Chất lượng" class="slogan-icon" width="20"
+                        height="20" loading="lazy" />
                     <span>Chất lượng đảm bảo</span>
                 </div>
                 <div class="slogan-item">
-                    <img src="{{ asset('../img/header2.webp') }}" alt="Vận chuyển" class="slogan-icon" width="20" height="20" loading="lazy" />
+                    <img src="{{ asset('../img/header2.webp') }}" alt="Vận chuyển" class="slogan-icon" width="20"
+                        height="20" loading="lazy" />
                     <span>Vận chuyển siêu tốc</span>
                 </div>
                 <div class="slogan-item">
-                    <img src="{{ asset('../img/header3.webp') }}" alt="Tư vấn" class="slogan-icon" width="20" height="20" loading="lazy" />
+                    <img src="{{ asset('../img/header3.webp') }}" alt="Tư vấn" class="slogan-icon" width="20" height="20"
+                        loading="lazy" />
                     <span>Tư vấn Hotline: 0346638136</span>
                 </div>
             </div>
@@ -60,10 +65,12 @@
                     <div class="search-box">
                         <span class="search-icon-input">
                             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20">
-                                <path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z" />
+                                <path
+                                    d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z" />
                             </svg>
                         </span>
-                        <input type="text" id="search-input" placeholder="Tìm kiếm sản phẩm..." autocomplete="off" aria-label="Search" aria-controls="dropdown-search" aria-expanded="false">
+                        <input type="text" id="search-input" placeholder="Tìm kiếm sản phẩm..." autocomplete="off"
+                            aria-label="Search" aria-controls="dropdown-search" aria-expanded="false">
                     </div>
                     <div class="dropdown-search" id="dropdown-search" role="listbox">
                         <p class="no-results" style="display: none;">Không tìm thấy sản phẩm nào.</p>
@@ -71,10 +78,12 @@
                     </div>
                 </div>
                 @auth
-                    <div class="cart-container" aria-label="Shopping cart" role="button" tabindex="0" aria-controls="cart-dropdown" aria-expanded="false">
+                    <div class="cart-container" aria-label="Shopping cart" role="button" tabindex="0"
+                        aria-controls="cart-dropdown" aria-expanded="false">
                         <div class="cart-icon">
                             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24">
-                                <path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49A1.003 1.003 0 0 0 20 4H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z" />
+                                <path
+                                    d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49A1.003 1.003 0 0 0 20 4H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z" />
                             </svg>
                         </div>
                         <span class="cart-count" aria-label="{{ $cartCount }} items in cart">{{ $cartCount }}</span>
@@ -84,7 +93,8 @@
                                 <span class="cart-dropdown-close" aria-label="Close">×</span>
                             </div>
                             <div class="cart-dropdown-body" id="cart-items">
-                                <div class="cart-empty" id="cart-empty" style="display: {{ $cartCount > 0 ? 'none' : 'block' }};">
+                                <div class="cart-empty" id="cart-empty"
+                                    style="display: {{ $cartCount > 0 ? 'none' : 'block' }};">
                                     <i class="fas fa-shopping-cart fa-3x"></i>
                                     <p>Giỏ hàng của bạn đang trống.</p>
                                     <p class="cart-empty-hint">Hãy thêm sản phẩm vào giỏ hàng để tiếp tục mua sắm.</p>
@@ -112,8 +122,9 @@
                             {{ e($username) }}
                         </span>
                         <div class="user-dropdown" id="user-dropdown">
+                            <a href="{{ route('profile') }}">Thông tin cá nhân</a>
                             <a href="{{ route('logout') }}"
-                               onclick="event.preventDefault(); document.getElementById('logout-form').submit();">Đăng xuất</a>
+                                onclick="event.preventDefault(); document.getElementById('logout-form').submit();">Đăng xuất</a>
                             <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
                                 @csrf
                             </form>
@@ -124,6 +135,7 @@
         </div>
     </header>
 
+
     <!-- Product Details Section -->
     <section class="product-details-section">
         <div class="container">
@@ -131,21 +143,24 @@
                 <div class="product-main">
                     <div class="product-image-gallery">
                         <div class="main-image">
-                            <img src="{{ asset('images/' . $product->ImageURL) }}" alt="{{ e($product->ProductName) }}" loading="lazy" width="400" height="400">
+                            <img src="{{ asset('images/' . $product->ImageURL) }}" alt="{{ e($product->ProductName) }}"
+                                loading="lazy" width="400" height="400">
                         </div>
                     </div>
                     <div class="product-content">
                         <h1>{{ e($product->ProductName) }}</h1>
                         <div class="product-meta">
                             <p class="stock-status">
-                                Tình trạng: <span class="{{ $product->Stock > 0 ? 'in-stock' : 'out-of-stock' }}">{{ $product->Stock > 0 ? 'Còn hàng' : 'Hết hàng' }}</span>
+                                Tình trạng: <span
+                                    class="{{ $product->Stock > 0 ? 'in-stock' : 'out-of-stock' }}">{{ $product->Stock > 0 ? 'Còn hàng' : 'Hết hàng' }}</span>
                             </p>
                             <div class="price-container">
                                 <span class="current-price">{{ number_format($product->CurrentPrice, 0, ',', '.') }}₫</span>
                                 @if ($product->DiscountPercentage)
                                     <div>
                                         <span class="original-price">{{ number_format($product->Price, 0, ',', '.') }}₫</span>
-                                        <span class="discount-badge">-{{ number_format($product->DiscountPercentage, 0) }}%</span>
+                                        <span
+                                            class="discount-badge">-{{ number_format($product->DiscountPercentage, 0) }}%</span>
                                     </div>
                                 @endif
                             </div>
@@ -156,13 +171,18 @@
                             <div class="quantity-control">
                                 <label for="quantity">Số lượng:</label>
                                 <div class="quantity-input">
-                                    <button type="button" class="quantity-btn decrease" data-id="{{ $product->ProductID }}" aria-label="Giảm số lượng">-</button>
-                                    <input type="number" id="quantity" name="quantity" value="1" min="1" max="{{ $product->Stock }}" data-id="{{ $product->ProductID }}" aria-label="Số lượng sản phẩm" required>
-                                    <button type="button" class="quantity-btn increase" data-id="{{ $product->ProductID }}" aria-label="Tăng số lượng">+</button>
+                                    <button type="button" class="quantity-btn decrease" data-id="{{ $product->ProductID }}"
+                                        aria-label="Giảm số lượng">-</button>
+                                    <input type="number" id="quantity" name="quantity" value="1" min="1"
+                                        max="{{ $product->Stock }}" data-id="{{ $product->ProductID }}"
+                                        aria-label="Số lượng sản phẩm" required>
+                                    <button type="button" class="quantity-btn increase" data-id="{{ $product->ProductID }}"
+                                        aria-label="Tăng số lượng">+</button>
                                 </div>
                             </div>
                             <div class="product-actions">
-                                <button type="submit" class="add-to-cart" data-product-id="{{ $product->ProductID }}" data-name="{{ e($product->ProductName) }}" data-price="{{ $product->CurrentPrice }}" {{ $product->Stock <= 0 ? 'disabled' : '' }}>
+                                <button type="submit" class="add-to-cart" data-product-id="{{ $product->ProductID }}"
+                                    data-name="{{ e($product->ProductName) }}" data-price="{{ $product->CurrentPrice }}" {{ $product->Stock <= 0 ? 'disabled' : '' }}>
                                     <i class="fas fa-shopping-cart"></i> Thêm vào giỏ
                                 </button>
                                 <a href="/checkout" class="buy-now" {{ $product->Stock <= 0 ? 'aria-disabled="true"' : '' }}>Mua ngay</a>
@@ -195,17 +215,21 @@
             <div class="products-slider" role="list">
                 @foreach($latestProducts as $related)
                     @if($related->ProductID && \App\Models\Product::where('ProductID', $related->ProductID)->exists())
-                        <a href="/product/{{ $related->ProductID }}" class="product-card" role="listitem" data-product-id="{{ $related->ProductID }}">
+                        <a href="/product/{{ $related->ProductID }}" class="product-card" role="listitem"
+                            data-product-id="{{ $related->ProductID }}">
                             <div class="product-image">
-                                <img src="{{ asset('images/' . $related->ImageURL) }}" alt="{{ e($related->ProductName) }}" loading="lazy" width="200" height="200">
+                                <img src="{{ asset('images/' . $related->ImageURL) }}" alt="{{ e($related->ProductName) }}"
+                                    loading="lazy" width="200" height="200">
                                 @if($related->DiscountPercentage)
                                     <span class="product-badge">Sale!</span>
                                 @endif
                                 <div class="product-actions">
-                                    <button class="product-action-btn quick-view" data-id="{{ $related->ProductID }}" aria-label="Xem nhanh">
+                                    <button class="product-action-btn quick-view" data-id="{{ $related->ProductID }}"
+                                        aria-label="Xem nhanh">
                                         <i class="fas fa-eye"></i>
                                     </button>
-                                    <button class="product-action-btn add-to-wishlist" data-id="{{ $related->ProductID }}" aria-label="Thêm vào danh sách yêu thích">
+                                    <button class="product-action-btn add-to-wishlist" data-id="{{ $related->ProductID }}"
+                                        aria-label="Thêm vào danh sách yêu thích">
                                         <i class="far fa-heart"></i>
                                     </button>
                                 </div>
@@ -228,7 +252,8 @@
                                         </div>
                                     @endif
                                 </div>
-                                <button class="add-to-cart" data-product-id="{{ $related->ProductID }}" data-name="{{ e($related->ProductName) }}" data-price="{{ $related->CurrentPrice }}">
+                                <button class="add-to-cart" data-product-id="{{ $related->ProductID }}"
+                                    data-name="{{ e($related->ProductName) }}" data-price="{{ $related->CurrentPrice }}">
                                     <i class="fas fa-shopping-cart"></i> Thêm vào giỏ
                                 </button>
                             </div>
@@ -291,7 +316,8 @@
                 <p>Copyright © 2025 Bản quyền của Công ty cổ phần TPV E-COMMERCE Việt Nam - Trụ sở: Hồ Chí Minh</p>
                 <div class="payment-methods">
                     <img src="{{ asset('../img/payment-visa.webp') }}" alt="Visa" width="40" height="25" loading="lazy">
-                    <img src="{{ asset('../img/payment-mastercard.webp') }}" alt="Mastercard" width="40" height="25" loading="lazy">
+                    <img src="{{ asset('../img/payment-mastercard.webp') }}" alt="Mastercard" width="40" height="25"
+                        loading="lazy">
                     <img src="{{ asset('../img/payment-momo.webp') }}" alt="MoMo" width="40" height="25" loading="lazy">
                     <img src="{{ asset('../img/payment-vnpay.webp') }}" alt="VNPay" width="40" height="25" loading="lazy">
                 </div>

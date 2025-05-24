@@ -16,7 +16,9 @@ export default defineConfig({
                 'resources/js/scripts-ctsp.js',
                 'resources/js/scripts-cart.js',
                 'resources/js/cart-shared.js',
-                'resources/js/scripts-checkout.js'
+                'resources/js/scripts-checkout.js',
+                'resources/css/profile.css',
+                'resources/js/profile.js'
             ],
             refresh: true,
         }),

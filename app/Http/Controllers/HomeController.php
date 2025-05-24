@@ -37,10 +37,19 @@ class HomeController extends Controller
         // Get latest products
         $latestProducts = Product::getLatestProducts();
 
-        // Paginate all products with discount
-        $products = Product::getPaginatedWithDiscount();
+        // Get sort parameter
+        $sort = $request->query('sort', '');
 
-        // Get categories for dropdown, ensuring valid products
+        // Paginate all products with discount (10 products per page)
+        $products = Product::getPaginatedWithDiscount(10, $sort);
+
+        // Get products for each category
+        $macProducts = Product::getByCategoryWithDiscount('Mac', $sort, 10);
+        $iphoneProducts = Product::getByCategoryWithDiscount('iPhone', $sort, 10);
+        $watchProducts = Product::getByCategoryWithDiscount('Watch', $sort, 10);
+        $airpodsProducts = Product::getByCategoryWithDiscount('AirPods', $sort, 10);
+
+        // Get categories for dropdown
         $categories = Category::with(['products' => function ($query) {
             $query->whereNotNull('ProductID');
         }])->get()->mapWithKeys(function ($category) {
@@ -60,6 +69,16 @@ class HomeController extends Controller
         // User info
         $user = Auth::user();
 
-        return view('home', compact('latestProducts', 'products', 'categories', 'cartCount', 'user'));
+        return view('home', compact(
+            'latestProducts',
+            'products',
+            'macProducts',
+            'iphoneProducts',
+            'watchProducts',
+            'airpodsProducts',
+            'categories',
+            'cartCount',
+            'user'
+        ));
     }
 }

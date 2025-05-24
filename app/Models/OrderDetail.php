@@ -1,5 +1,4 @@
 <?php
-// app/Models/OrderDetail.php
 
 namespace App\Models;
 
@@ -10,45 +9,41 @@ class OrderDetail extends Model
 {
     use HasFactory;
 
-    /**
-     * Tên bảng trong cơ sở dữ liệu
-     *
-     * @var string
-     */
     protected $table = 'order_details';
-
-    /**
-     * Khóa chính của bảng
-     *
-     * @var string
-     */
     protected $primaryKey = 'OrderDetailID';
+    public $timestamps = true;
 
-    /**
-     * Các thuộc tính có thể gán hàng loạt
-     *
-     * @var array<int, string>
-     */
     protected $fillable = [
         'OrderID',
         'ProductID',
         'Quantity',
-        'Price'
+        'Price',
     ];
 
-    /**
-     * Quan hệ với Order
-     */
     public function order()
     {
         return $this->belongsTo(Order::class, 'OrderID', 'OrderID');
     }
 
-    /**
-     * Quan hệ với Product
-     */
     public function product()
     {
         return $this->belongsTo(Product::class, 'ProductID', 'ProductID');
+    }
+
+    public static function createOrderDetail(array $data)
+    {
+        return self::create([
+            'OrderID' => $data['order_id'],
+            'ProductID' => $data['product_id'],
+            'Quantity' => $data['quantity'],
+            'Price' => $data['price'],
+        ]);
+    }
+
+    public static function getItemsByOrder($orderId)
+    {
+        return self::where('OrderID', $orderId)
+            ->with('product')
+            ->get();
     }
 }

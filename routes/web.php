@@ -8,6 +8,8 @@ use App\Http\Controllers\Auth\ForgotPasswordController;
 use App\Http\Controllers\Auth\ResetPasswordController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ProductController;
+
+// Admin
 use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\ProductController as AdminProductController;
 use App\Http\Controllers\Admin\OrderController;
@@ -29,9 +31,9 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/cart/clear', [CartController::class, 'clear'])->name('cart.clear');
     Route::get('/checkout', [CheckoutController::class, 'index'])->name('checkout');
     Route::post('/checkout', [CheckoutController::class, 'store'])->name('checkout.store');
-    Route::get('/checkout/complete', [CheckoutController::class, 'complete'])->name('checkout.complete');
     Route::get('/profile', [ProfileController::class, 'index'])->name('profile');
     Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::put('/password', [ProfileController::class, 'updatePassword'])->name('password.change');
 });
 
 Route::prefix('admin')->middleware(['auth', 'admin'])->group(function () {
@@ -61,3 +63,15 @@ Route::post('/reset-password', [ResetPasswordController::class, 'resetPassword']
 Route::get('/', [HomeController::class, 'index'])->name('home');
 Route::get('/product/{id}', [ProductController::class, 'show'])->name('product.show');
 Route::get('/products/search', [ProductController::class, 'search'])->name('product.search');
+Route::get('/products/all', [HomeController::class, 'index'])->name('products.all');
+Route::get('/category/{category}', [CategoryController::class, 'show'])->name('category.show');
+
+Route::get('/order/details/{order_id}', [CheckoutController::class, 'showOrderDetails'])->name('order.details');
+
+Route::middleware(['web', 'auth'])->group(function () {
+    Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');
+});
+
+Route::get('/reset-password', function () {
+    return redirect()->route('password.request');
+})->middleware('guest');

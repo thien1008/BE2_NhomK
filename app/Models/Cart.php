@@ -16,11 +16,6 @@ class Cart extends Model
         return $this->belongsTo(Product::class, 'ProductID', 'ProductID');
     }
 
-    /**
-     * Lấy danh sách các mục trong giỏ hàng của người dùng hiện tại
-     *
-     * @return \Illuminate\Database\Eloquent\Collection
-     */
     public static function getUserCartItems()
     {
         return self::where('UserID', Auth::id())
@@ -28,12 +23,6 @@ class Cart extends Model
             ->get();
     }
 
-    /**
-     * Tìm mục giỏ hàng theo ProductID và UserID
-     *
-     * @param int $productId
-     * @return \Illuminate\Database\Eloquent\Model|null
-     */
     public static function findByProductAndUser($productId)
     {
         return self::where('UserID', Auth::id())
@@ -41,22 +30,11 @@ class Cart extends Model
             ->first();
     }
 
-    /**
-     * Tính tổng số lượng sản phẩm trong giỏ hàng của người dùng
-     *
-     * @return int
-     */
     public static function getUserCartCount()
     {
         return self::where('UserID', Auth::id())->sum('Quantity');
     }
 
-    /**
-     * Xóa toàn bộ giỏ hàng của người dùng
-     *
-     * @param int $userId
-     * @return int
-     */
     public static function clearCart($userId)
     {
         return self::where('UserID', $userId)->delete();
