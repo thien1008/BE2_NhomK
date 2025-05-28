@@ -1,5 +1,4 @@
 <?php
-// app/Models/Coupon.php
 
 namespace App\Models;
 
@@ -10,25 +9,10 @@ class Coupon extends Model
 {
     use HasFactory;
 
-    /**
-     * Tên bảng trong cơ sở dữ liệu
-     *
-     * @var string
-     */
     protected $table = 'coupons';
 
-    /**
-     * Khóa chính của bảng
-     *
-     * @var string
-     */
     protected $primaryKey = 'CouponID';
 
-    /**
-     * Các thuộc tính có thể gán hàng loạt
-     *
-     * @var array<int, string>
-     */
     protected $fillable = [
         'Code',
         'DiscountPercentage',
@@ -36,12 +20,10 @@ class Coupon extends Model
         'ValidTo',
         'UsageLimit',
         'UsedCount',
-        'UserLimit'
+        'UserLimit',
+        'version'
     ];
 
-    /**
-     * Quan hệ với UserCoupons
-     */
     public function userCoupons()
     {
         return $this->hasMany(UserCoupon::class, 'CouponID', 'CouponID');

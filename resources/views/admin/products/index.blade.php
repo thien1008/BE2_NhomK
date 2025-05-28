@@ -73,19 +73,17 @@
                                         data-category="{{ $product->CategoryID }}"
                                         data-price="{{ $product->Price }}"
                                         data-stock="{{ $product->Stock }}"
-                                        data-desc="{{ $product->Description }}"
-                                        data-image="{{ $product->ImageURL ? Storage::url($product->ImageURL) : '' }}"
+                                        data-desc="{{ $product->Description ?? '' }}"
+                                        data-image="{{ $product->ImageURL ? asset('storage/' . ltrim($product->ImageURL, '/')) : '' }}"
+                                        data-version="{{ $product->version }}"
                                         data-bs-toggle="modal" data-bs-target="#editProductModal">
                                     <i class="bi bi-pencil"></i> Sửa
                                 </button>
-                                <form action="{{ route('admin.products.destroy', $product) }}" method="POST" style="display:inline;">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" class="btn btn-sm btn-danger"
-                                            onclick="return confirm('Bạn có chắc chắn muốn xóa sản phẩm {{ $product->ProductName }}?')">
-                                        <i class="bi bi-trash"></i> Xóa
-                                    </button>
-                                </form>
+                                <button type="button" class="btn btn-sm btn-danger delete-btn"
+                                        data-id="{{ $product->ProductID }}"
+                                        data-name="{{ $product->ProductName }}">
+                                    <i class="bi bi-trash"></i> Xóa
+                                </button>
                             </td>
                         </tr>
                         @endforeach
@@ -105,7 +103,7 @@
                 <h5 class="modal-title" id="addProductModalLabel">Thêm sản phẩm mới</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <form method="POST" action="{{ route('admin.products.store') }}" enctype="multipart/form-data">
+            <form id="addProductForm" action="{{ route('admin.products.store') }}" enctype="multipart/form-data">
                 @csrf
                 <div class="modal-body">
                     <div class="row mb-3">
@@ -164,7 +162,7 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
-                    <button type="submit" class="btn btn-success">Thêm mới</button>
+                    <button type="submit" class="btn btn-success" id="addProductSubmit">Thêm mới</button>
                 </div>
             </form>
         </div>
@@ -179,10 +177,11 @@
                 <h5 class="modal-title" id="editProductModalLabel">Cập nhật sản phẩm</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <form method="POST" id="editProductForm" enctype="multipart/form-data">
+            <form id="editProductForm" enctype="multipart/form-data">
                 @csrf
                 @method('PUT')
                 <input type="hidden" name="ProductID" id="edit-productid">
+                <input type="hidden" name="version" id="edit-version">
                 <div class="modal-body">
                     <div class="row mb-3">
                         <div class="col-md-6">
@@ -234,9 +233,45 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
-                    <button type="submit" class="btn btn-warning">Cập nhật</button>
+                    <button type="submit" class="btn btn-warning" id="editProductSubmit">Cập nhật</button>
                 </div>
             </form>
+        </div>
+    </div>
+</div>
+
+<!-- Error Modal -->
+<div class="modal fade" id="errorModal" tabindex="-1" aria-labelledby="errorModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title" id="errorModalLabel">Lỗi</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p id="errorMessage"></p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Success Modal -->
+<div class="modal fade" id="successModal" tabindex="-1" aria-labelledby="successModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title" id="successModalLabel">Thành công</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p id="successMessage"></p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+            </div>
         </div>
     </div>
 </div>
@@ -254,14 +289,25 @@ function previewImage(input, previewId) {
         }
         reader.readAsDataURL(input.files[0]);
     } else {
+        preview.src = '#';
         preview.style.display = 'none';
     }
 }
 
 document.addEventListener('DOMContentLoaded', function() {
+    console.log('Product management script loaded');
+
+    let isSubmitting = false;
+    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content;
+    if (!csrfToken) {
+        console.error('CSRF token not found');
+    }
+
+    // Edit button handler
     const editButtons = document.querySelectorAll('.edit-btn');
     editButtons.forEach(button => {
         button.addEventListener('click', function() {
+            console.log('Edit button clicked');
             const id = this.getAttribute('data-id');
             const name = this.getAttribute('data-name');
             const category = this.getAttribute('data-category');
@@ -269,6 +315,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const stock = this.getAttribute('data-stock');
             const desc = this.getAttribute('data-desc');
             const image = this.getAttribute('data-image');
+            const version = this.getAttribute('data-version');
 
             document.getElementById('edit-productid').value = id;
             document.getElementById('edit-productname').value = name;
@@ -276,17 +323,276 @@ document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('edit-price').value = price;
             document.getElementById('edit-stock').value = stock;
             document.getElementById('edit-description').value = desc;
+            document.getElementById('edit-version').value = version;
 
             const imagePreview = document.getElementById('edit-current-image-preview');
             const imageContainer = document.getElementById('edit-current-image-container');
+            const newImagePreview = document.getElementById('edit-imagePreview');
             if (image && image !== '') {
                 imagePreview.src = image;
                 imageContainer.style.display = 'block';
             } else {
                 imageContainer.style.display = 'none';
             }
+            newImagePreview.src = '#';
+            newImagePreview.style.display = 'none';
+            document.getElementById('edit-image').value = '';
 
             document.getElementById('editProductForm').action = `/admin/products/${id}`;
+        });
+    });
+
+    // Add form submission handler
+    const addForm = document.getElementById('addProductForm');
+    const addSubmitBtn = document.getElementById('addProductSubmit');
+    const addModalEl = document.getElementById('addProductModal');
+    const addModal = bootstrap.Modal.getOrCreateInstance(addModalEl);
+
+    if (addForm) {
+        addForm.addEventListener('submit', function(event) {
+            event.preventDefault();
+            event.stopPropagation();
+            console.log('Add form submitted');
+
+            if (isSubmitting) {
+                console.log('Submission blocked: already in progress');
+                return;
+            }
+
+            isSubmitting = true;
+            addSubmitBtn.disabled = true;
+            addSubmitBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Đang xử lý...';
+
+            const formData = new FormData(this);
+            fetch(this.action, {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': csrfToken,
+                    'Accept': 'application/json'
+                },
+                body: formData
+            })
+            .then(response => {
+                console.log('Add response status:', response.status);
+                return response.json().then(data => ({ status: response.status, data }));
+            })
+            .then(({ status, data }) => {
+                isSubmitting = false;
+                addSubmitBtn.disabled = false;
+                addSubmitBtn.innerHTML = 'Thêm mới';
+
+                if (status === 200 && data.success) {
+                    console.log('Add success:', data.success);
+                    addForm.reset();
+                    document.getElementById('add-image').value = '';
+                    const imagePreview = document.getElementById('add-imagePreview');
+                    imagePreview.src = '#';
+                    imagePreview.style.display = 'none';
+                    addModal.hide();
+
+                    document.getElementById('successMessage').textContent = data.success;
+                    const successModal = new bootstrap.Modal(document.getElementById('successModal'));
+                    successModal.show();
+                    document.getElementById('successModal').addEventListener('hidden.bs.modal', function() {
+                        window.location.reload();
+                    }, { once: true });
+                } else if (status === 422 && data.errors) {
+                    console.log('Add validation errors:', data.errors);
+                    const errorMessages = Object.values(data.errors).flat().join('. ');
+                    document.getElementById('errorMessage').textContent = errorMessages;
+                    const errorModal = new bootstrap.Modal(document.getElementById('errorModal'));
+                    errorModal.show();
+                } else {
+                    throw new Error('Unexpected response: ' + JSON.stringify(data));
+                }
+            })
+            .catch(error => {
+                isSubmitting = false;
+                addSubmitBtn.disabled = false;
+                addSubmitBtn.innerHTML = 'Thêm mới';
+                console.error('Add error:', error);
+
+                document.getElementById('errorMessage').textContent = 'Đã xảy ra lỗi khi thêm sản phẩm: ' + error.message;
+                const errorModal = new bootstrap.Modal(document.getElementById('errorModal'));
+                errorModal.show();
+            });
+        });
+    } else {
+        console.error('Add form not found');
+    }
+
+    // Edit form submission handler
+    const editForm = document.getElementById('editProductForm');
+    const editSubmitBtn = document.getElementById('editProductSubmit');
+    const editModalEl = document.getElementById('editProductModal');
+    const editModal = bootstrap.Modal.getOrCreateInstance(editModalEl);
+
+    if (editForm) {
+        editForm.addEventListener('submit', function(event) {
+            event.preventDefault();
+            event.stopPropagation();
+            console.log('Edit form submitted');
+
+            if (isSubmitting) {
+                console.log('Submission blocked: already in progress');
+                return;
+            }
+
+            isSubmitting = true;
+            editSubmitBtn.disabled = true;
+            editSubmitBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Đang xử lý...';
+
+            const formData = new FormData(this);
+            fetch(this.action, {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': csrfToken,
+                    'Accept': 'application/json'
+                },
+                body: formData
+            })
+            .then(response => {
+                console.log('Edit response status:', response.status);
+                return response.json().then(data => ({ status: response.status, data }));
+            })
+            .then(({ status, data }) => {
+                isSubmitting = false;
+                editSubmitBtn.disabled = false;
+                editSubmitBtn.innerHTML = 'Cập nhật';
+
+                if (status === 200 && data.success) {
+                    console.log('Edit success:', data.success);
+                    editForm.reset();
+                    document.getElementById('edit-image').value = '';
+                    document.getElementById('edit-imagePreview').style.display = 'none';
+                    editModal.hide();
+
+                    document.getElementById('successMessage').textContent = data.success;
+                    const successModal = new bootstrap.Modal(document.getElementById('successModal'));
+                    successModal.show();
+                    document.getElementById('successModal').addEventListener('hidden.bs.modal', function() {
+                        window.location.reload();
+                    }, { once: true });
+                } else if (status === 404 && data.error) {
+                    console.log('Edit not found:', data.error);
+                    editForm.reset();
+                    document.getElementById('edit-image').value = '';
+                    document.getElementById('edit-imagePreview').style.display = 'none';
+                    editModal.hide();
+
+                    document.getElementById('errorMessage').textContent = data.error;
+                    const errorModal = new bootstrap.Modal(document.getElementById('errorModal'));
+                    errorModal.show();
+                    document.getElementById('errorModal').addEventListener('hidden.bs.modal', function() {
+                        window.location.reload();
+                    }, { once: true });
+                } else if (status === 409 && data.error) {
+                    console.log('Edit conflict:', data.error);
+                    editForm.reset();
+                    document.getElementById('edit-image').value = '';
+                    document.getElementById('edit-imagePreview').style.display = 'none';
+                    editModal.hide();
+
+                    document.getElementById('errorMessage').textContent = data.error;
+                    const errorModal = new bootstrap.Modal(document.getElementById('errorModal'));
+                    errorModal.show();
+                    document.getElementById('errorModal').addEventListener('hidden.bs.modal', function() {
+                        window.location.reload();
+                    }, { once: true });
+                } else if (status === 422 && data.errors) {
+                    console.log('Edit validation errors:', data.errors);
+                    const errorMessages = Object.values(data.errors).flat().join('. ');
+                    document.getElementById('errorMessage').textContent = errorMessages;
+                    const errorModal = new bootstrap.Modal(document.getElementById('errorModal'));
+                    errorModal.show();
+                } else {
+                    throw new Error('Unexpected response: ' + JSON.stringify(data));
+                }
+            })
+            .catch(error => {
+                isSubmitting = false;
+                editSubmitBtn.disabled = false;
+                editSubmitBtn.innerHTML = 'Cập nhật';
+                console.error('Edit error:', error);
+
+                editForm.reset();
+                document.getElementById('edit-image').value = '';
+                document.getElementById('edit-imagePreview').style.display = 'none';
+                editModal.hide();
+
+                document.getElementById('errorMessage').textContent = 'Đã xảy ra lỗi khi cập nhật sản phẩm: ' + error.message;
+                const errorModal = new bootstrap.Modal(document.getElementById('errorModal'));
+                errorModal.show();
+                document.getElementById('errorModal').addEventListener('hidden.bs.modal', function() {
+                    window.location.reload();
+                }, { once: true });
+            });
+        });
+    } else {
+        console.error('Edit form not found');
+    }
+
+    // Delete button handler
+    const deleteButtons = document.querySelectorAll('.delete-btn');
+    deleteButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            console.log('Delete button clicked');
+            const id = this.getAttribute('data-id');
+            const name = this.getAttribute('data-name');
+
+            if (confirm(`Bạn có chắc chắn muốn xóa sản phẩm ${name}?`)) {
+                if (isSubmitting) {
+                    console.log('Delete blocked: already in progress');
+                    return;
+                }
+
+                isSubmitting = true;
+
+                fetch(`/admin/products/${id}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'X-CSRF-TOKEN': csrfToken,
+                        'Accept': 'application/json'
+                    }
+                })
+                .then(response => {
+                    console.log('Delete response status:', response.status);
+                    return response.json().then(data => ({ status: response.status, data }));
+                })
+                .then(({ status, data }) => {
+                    isSubmitting = false;
+
+                    if (status === 200 && data.success) {
+                        console.log('Delete success:', data.success);
+                        document.getElementById('successMessage').textContent = data.success;
+                        const successModal = new bootstrap.Modal(document.getElementById('successModal'));
+                        successModal.show();
+                        document.getElementById('successModal').addEventListener('hidden.bs.modal', function() {
+                            window.location.reload();
+                        }, { once: true });
+                    } else if (status === 404 && data.error) {
+                        console.log('Delete not found:', data.error);
+                        document.getElementById('errorMessage').textContent = data.error;
+                        const errorModal = new bootstrap.Modal(document.getElementById('errorModal'));
+                        errorModal.show();
+                        document.getElementById('errorModal').addEventListener('hidden.bs.modal', function() {
+                            window.location.reload();
+                        }, { once: true });
+                    } else {
+                        throw new Error('Unexpected response: ' + JSON.stringify(data));
+                    }
+                })
+                .catch(error => {
+                    isSubmitting = false;
+                    console.error('Delete error:', error);
+                    document.getElementById('errorMessage').textContent = 'Đã xảy ra lỗi khi xóa sản phẩm: ' + error.message;
+                    const errorModal = new bootstrap.Modal(document.getElementById('errorModal'));
+                    errorModal.show();
+                    document.getElementById('errorModal').addEventListener('hidden.bs.modal', function() {
+                        window.location.reload();
+                    }, { once: true });
+                });
+            }
         });
     });
 });

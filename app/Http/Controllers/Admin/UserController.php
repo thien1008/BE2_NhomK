@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Validation\ValidationException;
 
 class UserController extends Controller
 {
@@ -21,50 +22,82 @@ class UserController extends Controller
 
     public function store(Request $request)
     {
-        $request->validate([
-            'FullName' => 'required|string|max:255',
-            'Email' => 'required|email|unique:users,Email',
-            'password' => 'required|string|min:8',
-            'Phone' => 'nullable|string|max:20',
-            'UserType' => 'required|in:Regular,VIP,Admin',
-        ]);
+        try {
+            $validated = $request->validate([
+                'FullName' => 'required|string|max:255',
+                'Email' => 'required|email|unique:users,Email',
+                'password' => 'required|string|min:8',
+                'Phone' => 'nullable|string|max:20',
+                'UserType' => 'required|in:Regular,VIP,Admin',
+            ]);
 
-        $data = $request->only(['FullName', 'Email', 'Phone', 'UserType', 'password']);
-        
-        User::create($data);
+            $data = $request->only(['FullName', 'Email', 'Phone', 'UserType', 'password']);
+            $data['version'] = 1; // Initialize version
 
-        return redirect()->route('admin.users.index')->with('success', 'User created successfully.');
+            User::create($data);
+
+            return response()->json(['success' => 'Người dùng đã được tạo thành công.'], 200);
+        } catch (ValidationException $e) {
+            return response()->json(['errors' => $e->errors()], 422);
+        } catch (\Exception $e) {
+            Log::error('Error creating user: ' . $e->getMessage());
+            return response()->json(['error' => 'Đã xảy ra lỗi khi tạo người dùng.'], 500);
+        }
     }
 
     public function update(Request $request, User $user)
     {
-        $request->validate([
-            'FullName' => 'required|string|max:255',
-            'Email' => 'required|email|unique:users,Email,' . $user->UserID . ',UserID',
-            'password' => 'nullable|string|min:8',
-            'Phone' => 'nullable|string|max:20',
-            'UserType' => 'required|in:Regular,VIP,Admin',
-        ]);
+        try {
+            $validated = $request->validate([
+                'FullName' => 'required|string|max:255',
+                'Email' => 'required|email|unique:users,Email,' . $user->UserID . ',UserID',
+                'password' => 'nullable|string|min:8',
+                'Phone' => 'nullable|string|max:20',
+                'UserType' => 'required|in:Regular,VIP,Admin',
+                'version' => 'required|integer|min:1',
+            ]);
 
-        $data = $request->only(['FullName', 'Email', 'Phone', 'UserType']);
-        if ($request->filled('password')) {
-            Log::info('Updating password for user ID: ' . $user->UserID);
-            $data['password'] = $request->password;
+            // Check version for optimistic locking
+            if ($user->version != $request->version) {
+                return response()->json(['error' => 'Dữ liệu người dùng đã được thay đổi bởi người khác. Vui lòng làm mới trang và thử lại.'], 409);
+            }
+
+            $data = $request->only(['FullName', 'Email', 'Phone', 'UserType']);
+            if ($request->filled('password')) {
+                Log::info('Updating password for user ID: ' . $user->UserID);
+                $data['password'] = $request->password;
+            }
+            $data['version'] = $user->version + 1; // Increment version
+
+            $user->update($data);
+
+            return response()->json(['success' => 'Người dùng đã được cập nhật thành công.'], 200);
+        } catch (ValidationException $e) {
+            return response()->json(['errors' => $e->errors()], 422);
+        } catch (\Exception $e) {
+            Log::error('Error updating user: ' . $e->getMessage());
+            return response()->json(['error' => 'Đã xảy ra lỗi khi cập nhật người dùng.'], 500);
         }
-
-        $user->update($data);
-
-        return redirect()->route('admin.users.index')->with('success', 'User updated successfully.');
     }
 
-    public function destroy(User $user)
+    public function destroy($id)
     {
-        if ($user->UserID === auth()->id()) {
-            return redirect()->route('admin.users.index')->with('error', 'You cannot delete your own account.');
+        try {
+            $user = User::find($id);
+            if (!$user) {
+                return response()->json(['error' => 'Người dùng không tồn tại.'], 404);
+            }
+
+            if ($user->UserID === auth()->id()) {
+                return response()->json(['error' => 'Bạn không thể xóa tài khoản của chính mình.'], 403);
+            }
+
+            $user->delete();
+
+            return response()->json(['success' => 'Người dùng đã được xóa thành công.'], 200);
+        } catch (\Exception $e) {
+            Log::error('Error deleting user: ' . $e->getMessage());
+            return response()->json(['error' => 'Đã xảy ra lỗi khi xóa người dùng.'], 500);
         }
-
-        $user->delete();
-
-        return redirect()->route('admin.users.index')->with('success', 'User deleted successfully.');
     }
 }

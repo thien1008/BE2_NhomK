@@ -14,6 +14,9 @@ class User extends Authenticatable implements MustVerifyEmail
     protected $table = 'users';
     protected $primaryKey = 'UserID';
 
+    // Enable optimistic locking
+    protected $optimisticLocking = true;
+
     protected $fillable = [
         'FullName',
         'Email',
@@ -22,7 +25,8 @@ class User extends Authenticatable implements MustVerifyEmail
         'UserType',
         'GoogleID',
         'FacebookID',
-        'CreatedAt'
+        'CreatedAt',
+        'version', // Add version to fillable
     ];
 
     protected $hidden = [
