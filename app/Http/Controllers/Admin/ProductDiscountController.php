@@ -18,6 +18,7 @@ class ProductDiscountController extends Controller
             ->whereHas('product', function ($query) use ($search) {
                 $query->where('ProductName', 'like', "%{$search}%");
             })
+            ->orderBy('created_at', 'desc')
             ->paginate(10);
 
         return view('admin.product_discounts.index', compact('productDiscounts', 'search'));

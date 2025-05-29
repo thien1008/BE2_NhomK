@@ -18,6 +18,7 @@ class ProductController extends Controller
         $search = $request->query('search', '');
         $products = Product::with('category')
             ->where('ProductName', 'like', "%{$search}%")
+            ->orderBy('created_at', 'asc')
             ->paginate(10);
 
         return view('admin.products.index', compact('products', 'search'));

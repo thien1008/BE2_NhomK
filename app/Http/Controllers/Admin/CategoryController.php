@@ -15,6 +15,7 @@ class CategoryController extends Controller
     {
         $search = $request->query('search', '');
         $categories = Category::where('CategoryName', 'like', "%{$search}%")
+            ->orderBy('created_at', 'desc')
             ->paginate(10);
 
         return view('admin.categories.index', compact('categories', 'search'));

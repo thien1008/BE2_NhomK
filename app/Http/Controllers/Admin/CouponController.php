@@ -14,6 +14,7 @@ class CouponController extends Controller
     {
         $search = $request->query('search', '');
         $coupons = Coupon::where('Code', 'like', "%{$search}%")
+            ->orderBy('created_at', 'desc')
             ->paginate(10);
 
         return view('admin.coupons.index', compact('coupons', 'search'));

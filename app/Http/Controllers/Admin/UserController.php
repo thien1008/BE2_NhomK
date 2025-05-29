@@ -15,6 +15,7 @@ class UserController extends Controller
         $search = $request->query('search', '');
         $users = User::where('FullName', 'like', "%{$search}%")
             ->orWhere('Email', 'like', "%{$search}%")
+            ->orderBy('created_at', 'desc')
             ->paginate(10);
 
         return view('admin.users.index', compact('users', 'search'));
