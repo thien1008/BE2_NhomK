@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Cache;
 
 class Product extends Model
 {
@@ -68,19 +69,16 @@ class Product extends Model
         return Auth::check() ? Cart::where('UserID', Auth::id())->sum('Quantity') : 0;
     }
 
-    public static function searchWithDiscount($keyword, $limit = 10)
+    public static function searchWithDiscount($keyword, $limit = 6)
     {
-        $currentDate = now();
-
-        return self::with([
-            'discounts' => function ($query) use ($currentDate) {
-                $query->where('StartDate', '<=', $currentDate)
-                    ->where('EndDate', '>=', $currentDate);
-            }
-        ])
+        $keyword = strtolower($keyword);
+        return self::with('category')
             ->where(function ($q) use ($keyword) {
-                $q->where('ProductName', 'like', "%$keyword%")
-                    ->orWhere('Description', 'like', "%$keyword%");
+                $q->whereRaw('LOWER(ProductName) LIKE ?', ["%$keyword%"])
+                    ->orWhereRaw('LOWER(Description) LIKE ?', ["%$keyword%"])
+                    ->orWhereHas('category', function ($query) use ($keyword) {
+                        $query->whereRaw('LOWER(CategoryName) LIKE ?', ["%$keyword%"]);
+                    });
             })
             ->limit($limit)
             ->get([
@@ -93,22 +91,18 @@ class Product extends Model
                 'CreatedAt',
             ])
             ->map(function ($product) {
-                $discount = $product->discounts->first();
-
                 return [
                     'ProductID' => $product->ProductID,
                     'ProductName' => $product->ProductName,
                     'ImageURL' => $product->ImageURL,
                     'Price' => $product->Price,
-                    'CurrentPrice' => $discount
-                        ? $product->Price * (1 - $discount->DiscountPercentage / 100)
-                        : $product->Price,
-                    'DiscountPercentage' => $discount ? $discount->DiscountPercentage : null,
+                    'CurrentPrice' => $product->Price,
+                    'DiscountPercentage' => null,
                 ];
             });
     }
 
-    public static function getPaginatedWithDiscount($perPage = 10, $sort = '')
+    public static function getPaginatedWithDiscount($sort = '')
     {
         $currentDate = now();
 
@@ -131,7 +125,7 @@ class Product extends Model
             $query->orderBy('Price', 'desc');
         }
 
-        return $query->paginate($perPage)->through(function ($product) {
+        return $query->get()->map(function ($product) {
             $discount = $product->discounts->first();
 
             $product->CurrentPrice = $discount
@@ -149,36 +143,40 @@ class Product extends Model
         return self::inRandomOrder()->take($limit)->get();
     }
 
-    public static function getByCategoryWithDiscount($categoryName, $sort = '', $perPage = 10)
+    // Product.php
+    // Product.php
+    public static function getFilteredProducts($category = null, $sort = '', $page = 1, $perPage = 12)
     {
-        $currentDate = now();
+        $cacheKey = "products_{$category}_{$sort}_{$page}_{$perPage}";
+        return Cache::remember($cacheKey, now()->addMinutes(10), function () use ($category, $sort, $page, $perPage) {
+            $currentDate = now();
+            $query = self::with(['category']);
 
-        $query = self::with([
-            'discounts' => function ($query) use ($currentDate) {
-                $query->where('StartDate', '<=', $currentDate)
-                    ->where('EndDate', '>=', $currentDate);
+            if ($category && $category !== 'all') {
+                $query->whereHas('category', function ($q) use ($category) {
+                    $q->whereRaw('LOWER(CategoryName) = ?', [strtolower($category)]);
+                });
             }
-        ])
-            ->whereHas('category', function ($query) use ($categoryName) {
-                $query->where('CategoryName', $categoryName);
+
+            if ($sort === 'price-asc' || $sort === 'price_asc') {
+                $query->orderBy('Price', 'asc');
+            } elseif ($sort === 'price-desc' || $sort === 'price_desc') {
+                $query->orderBy('Price', 'desc');
+            } else {
+                $query->orderBy('ProductName', 'asc');
+            }
+
+            $products = $query->paginate($perPage, ['*'], 'page', $page);
+            if ($page > $products->lastPage()) {
+                return $query->paginate($perPage, ['*'], 'page', 1);
+            }
+
+            return $products->through(function ($product) use ($currentDate) {
+                // Bỏ logic giảm giá vì bảng discounts không tồn tại
+                $product->CurrentPrice = $product->Price;
+                $product->DiscountPercentage = null;
+                return $product;
             });
-
-        if ($sort === 'price-asc') {
-            $query->orderBy('Price', 'asc');
-        } elseif ($sort === 'price-desc') {
-            $query->orderBy('Price', 'desc');
-        }
-
-        return $query->paginate($perPage)->through(function ($product) {
-            $discount = $product->discounts->first();
-
-            $product->CurrentPrice = $discount
-                ? $product->Price * (1 - $discount->DiscountPercentage / 100)
-                : $product->Price;
-
-            $product->DiscountPercentage = $discount ? $discount->DiscountPercentage : null;
-
-            return $product;
         });
     }
 }

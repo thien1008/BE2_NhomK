@@ -200,7 +200,8 @@
                                             <span class="current-price">{{ number_format($item->CurrentPrice, 0, ',', '.') }}₫</span>
                                             @if($item->OriginalPrice > $item->CurrentPrice)
                                                 <span class="original-price">{{ number_format($item->OriginalPrice, 0, ',', '.') }}₫</span>
-                                                <span class="discount-badge">-{{ number_format(($item->OriginalPrice - $item->CurrentPrice) / $item->OriginalPrice * 100, 0) }}%</span>
+                                                <span
+                                                    class="discount-badge">-{{ number_format(($item->OriginalPrice - $item->CurrentPrice) / $item->OriginalPrice * 100, 0) }}%</span>
                                             @endif
                                         </div>
                                         <div class="item-quantity">
@@ -272,10 +273,14 @@
                         <div class="payment-methods">
                             <p>Phương thức thanh toán</p>
                             <div class="payment-icons">
-                                <img src="{{ asset('../img/payment-visa.png') }}" alt="Visa" width="40" height="25" loading="lazy">
-                                <img src="{{ asset('../img/payment-mastercard.png') }}" alt="Mastercard" width="40" height="25" loading="lazy">
-                                <img src="{{ asset('../img/payment-momo.png') }}" alt="MoMo" width="40" height="25" loading="lazy">
-                                <img src="{{ asset('../img/payment-vnpay.png') }}" alt="VNPay" width="40" height="25" loading="lazy">
+                                <img src="{{ asset('../img/payment-visa.png') }}" alt="Visa" width="40" height="25"
+                                    loading="lazy">
+                                <img src="{{ asset('../img/payment-mastercard.png') }}" alt="Mastercard" width="40" height="25"
+                                    loading="lazy">
+                                <img src="{{ asset('../img/payment-momo.png') }}" alt="MoMo" width="40" height="25"
+                                    loading="lazy">
+                                <img src="{{ asset('../img/payment-vnpay.png') }}" alt="VNPay" width="40" height="25"
+                                    loading="lazy">
                             </div>
                         </div>
                     </div>
@@ -312,7 +317,8 @@
                                 </div>
                             </div>
                             <div class="product-details">
-                                <a href="/product/{{ $product->ProductID }}" class="product-title">{{ e($product->ProductName) }}</a>
+                                <a href="/product/{{ $product->ProductID }}"
+                                    class="product-title">{{ e($product->ProductName) }}</a>
                                 <div class="product-rating">
                                     <i class="fas fa-star"></i>
                                     <i class="fas fa-star"></i>
@@ -417,5 +423,4 @@
             </div>
         </div>
     </div>
-
 @endsection

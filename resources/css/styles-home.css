@@ -262,13 +262,15 @@ header nav button:hover::after {
   opacity: 0;
   visibility: hidden;
   transform: translateY(0);
-  transition: opacity 0.3s ease, transform 0.3s ease;
-  border-left: 1pxindicator none;
+  transition: opacity 0.3s ease, visibility 0.3s ease, transform 0.3s ease;
+  border-left: none;
   border-right: 1px solid var(--border);
   border-bottom: 1px solid var(--border);
   border-top: 0;
   padding: 10px 0 30px 0;
-  min-height: 150px;
+  max-height: 400px; /* Tăng max-height để chứa 7 hàng */
+  overflow-y: auto; /* Bật thanh cuộn dọc */
+  scrollbar-width: thin;
 }
 
 .dropdown-menu.active {
@@ -277,60 +279,60 @@ header nav button:hover::after {
   transform: translateY(0);
 }
 
-/* Dropdown Overlay for Background Blur */
-.dropdown-overlay {
-  position: fixed;
-  top: 234px;
-  left: 0;
-  width: 100vw;
-  height: calc(100vh - 234px);
-  background: rgba(0, 0, 0, 0.1);
-  backdrop-filter: blur(3px);
-  z-index: 5010;
-  opacity: 0;
-  visibility: hidden;
-  transition: opacity 0.3s ease;
+.dropdown-menu::-webkit-scrollbar {
+  width: 8px;
 }
 
-.dropdown-overlay.active {
-  opacity: 1;
-  visibility: visible;
+.dropdown-menu::-webkit-scrollbar-thumb {
+  background: var(--primary);
+  border-radius: 4px;
 }
 
-/* Hide overlay on mobile */
-@media (max-width: 768px) {
-  .dropdown-overlay {
-    display: none;
-  }
+.dropdown-menu::-webkit-scrollbar-track {
+  background: var(--background-alt);
 }
 
-.dropdown-menu a {
-  display: block;
-  padding: 12px 15px;
-  text-decoration: none;
-  color: var(--text-primary);
-  font-size: 16px;
-  transition: all 0.2s ease, font-weight 0.2s ease, transform 0.2s ease;
-  border-bottom: 1px solid var(--border);
-}
-
-.dropdown-menu a:last-child {
-  border-bottom: none;
-}
-
-.dropdown-menu a:hover {
-  background: transparent;
-  color: var(--primary);
-  font-weight: 700;
-  transform: scale(1.05);
-  transform-origin: left;
-}
-
-/* Dropdown container for better content alignment */
 .dropdown-menu-container {
   max-width: 1280px;
   margin: 0 auto;
   padding: 0 15px;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(150px, 1fr)); /* 4 cột */
+  grid-template-rows: repeat(7, 50px); /* 7 hàng, mỗi hàng 50px */
+  gap: 10px; /* Khoảng cách 10px giữa các ô */
+  grid-auto-flow: column; /* Sắp xếp theo cột (từ trên xuống dưới) */
+}
+
+.dropdown-menu a {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px;
+  text-decoration: none;
+  color: var(--text-primary);
+  font-size: 14px;
+  transition: all 0.2s ease;
+  border: none; /* Loại bỏ khung */
+  border-radius: var(--radius);
+  background: var(--background);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  height: 50px; /* Chiều cao cố định cho mỗi ô */
+  box-sizing: border-box;
+}
+
+.dropdown-menu a.empty {
+  visibility: hidden; /* Ẩn các ô trống */
+}
+
+/* Responsive: Chuyển thành 1 cột trên mobile */
+@media (max-width: 768px) {
+  .dropdown-menu-container {
+    grid-template-columns: 1fr; /* 1 cột */
+    grid-template-rows: auto; /* Hàng tự động */
+    grid-auto-flow: row; /* Sắp xếp theo hàng trên mobile */
+  }
 }
 
 /* Enhanced Dropdown Styles */
@@ -1412,8 +1414,18 @@ header nav button:hover::after {
   cursor: pointer;
   border: none;
   color: #fff;
-  font-size: 18px;
+  font-size: 14px;
   transition: all 0.3s ease;
+}
+
+.nav-button i {
+  font-size: 14px;
+  line-height: 1;
+  width: 14px;
+  height: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .nav-button:hover {
@@ -2314,52 +2326,6 @@ header nav button:hover::after {
   transform: translateY(0);
 }
 
-/* Pagination */
-.pagination {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 10px;
-  margin: 20px 0;
-}
-
-.pagination .page-item {
-  list-style: none;
-}
-
-.pagination .page-link {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 40px;
-  height: 40px;
-  background: var(--background);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  color: var(--text-primary);
-  text-decoration: none;
-  font: 600 14px var(--font-heading);
-  transition: all 0.3s ease;
-}
-
-.pagination .page-link:hover {
-  background: var(--primary);
-  color: #fff;
-  border-color: var(--primary);
-}
-
-.pagination .active .page-link {
-  background: var(--primary);
-  color: #fff;
-  border-color: var(--primary);
-}
-
-.pagination .disabled .page-link {
-  background: var(--background-alt);
-  color: #999;
-  cursor: not-allowed;
-}
-
 /* Search Results */
 .dropdown-search .search-result {
   display: flex;
@@ -2423,4 +2389,150 @@ header nav button:hover::after {
   background-color: #ffff00;
   color: #000;
   padding: 0 2px;
+}
+
+/* Updated Pagination Styles */
+.pagination-container {
+  text-align: center;
+  margin-top: 20px;
+}
+
+.pagination {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  list-style: none;
+  padding: 0;
+}
+
+.pagination li {
+  display: inline-block;
+}
+
+.pagination a,
+.pagination span {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  text-decoration: none;
+  color: var(--text-primary);
+  font: 500 14px var(--font-heading);
+  transition: all 0.3s ease;
+  border: 1px solid var(--border);
+  background: var(--background);
+}
+
+.pagination a:hover {
+  background: var(--primary);
+  color: #fff;
+  border-color: var(--primary);
+}
+
+.pagination .active a,
+.pagination .active span {
+  background: var(--primary);
+  color: #fff;
+  border-color: var(--primary);
+}
+
+.pagination .disabled a,
+.pagination .disabled span {
+  color: #999;
+  cursor: not-allowed;
+  background: var(--background-alt);
+  border-color: var(--border);
+}
+
+/* Specific styles for previous and next buttons with increased specificity */
+.pagination li.previous a,
+.pagination li.next a {
+  font-size: 14px;
+  line-height: 1;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  /* Remove any padding */
+}
+
+.pagination li.previous a span,
+.pagination li.next a span,
+.pagination li.previous a i,
+.pagination li.next a i {
+  font-size: 14px;
+  width: 14px;
+  height: 14px;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pagination li.previous a:hover,
+.pagination li.next a:hover {
+  background: var(--primary);
+  color: #fff;
+  border-color: var(--primary);
+}
+
+.pagination li.previous a:hover span,
+.pagination li.previous a:hover i,
+.pagination li.next a:hover span,
+.pagination li.next a:hover i {
+  color: #fff;
+}
+
+.pagination li.disabled a span,
+.pagination li.disabled a i {
+  color: #999;
+}
+
+/* Ensure no external styles override */
+.pagination li.previous a span[aria-hidden="true"],
+.pagination li.next a span[aria-hidden="true"],
+.pagination li.previous a i[aria-hidden="true"],
+.pagination li.next a i[aria-hidden="true"] {
+  font-size: 14px !important;
+  width: 14px !important;
+  height: 14px !important;
+}
+
+/* Responsive adjustments for pagination */
+@media (max-width: 576px) {
+
+  .pagination a,
+  .pagination span {
+    width: 30px;
+    height: 30px;
+    font-size: 13px;
+  }
+
+  .pagination li.previous a,
+  .pagination li.next a {
+    width: 30px;
+    height: 30px;
+  }
+
+  .pagination li.previous a span,
+  .pagination li.next a span,
+  .pagination li.previous a i,
+  .pagination li.next a i {
+    font-size: 13px;
+    width: 13px;
+    height: 13px;
+  }
+
+  .pagination li.previous a span[aria-hidden="true"],
+  .pagination li.next a span[aria-hidden="true"],
+  .pagination li.previous a i[aria-hidden="true"],
+  .pagination li.next a i[aria-hidden="true"] {
+    font-size: 13px !important;
+    width: 13px !important;
+    height: 13px !important;
+  }
 }

@@ -6,26 +6,22 @@
             <div class="product-card" role="listitem" data-product-id="{{ $product->ProductID }}">
                 <div class="product-image">
                     <a href="/product/{{ $product->ProductID }}">
-                        <img src="{{ asset('images/' . $product->ImageURL) }}" alt="{{ e($product->ProductName) }}"
-                            loading="lazy" width="200" height="200">
+                        <img src="{{ asset('images/' . $product->ImageURL) }}" alt="{{ e($product->ProductName) }}" loading="lazy" width="200" height="200">
                     </a>
                     @if($product->DiscountPercentage)
                         <span class="product-badge">Sale!</span>
                     @endif
                     <div class="product-actions">
-                        <button class="product-action-btn quick-view" data-product-id="{{ $product->ProductID }}"
-                            aria-label="Quick view">
+                        <button class="product-action-btn quick-view" aria-label="Quick view">
                             <i class="fas fa-eye"></i>
                         </button>
-                        <button class="product-action-btn add-to-wishlist" data-product-id="{{ $product->ProductID }}"
-                            aria-label="Add to wishlist">
+                        <button class="product-action-btn add-to-wishlist" aria-label="Add to wishlist">
                             <i class="far fa-heart"></i>
                         </button>
                     </div>
                 </div>
                 <div class="product-details">
-                    <a href="/product/{{ $product->ProductID }}"
-                        class="product-title">{{ e($product->ProductName) }}</a>
+                    <a href="/product/{{ $product->ProductID }}" class="product-title">{{ e($product->ProductName) }}</a>
                     <div class="product-rating">
                         <i class="fas fa-star"></i>
                         <i class="fas fa-star"></i>
@@ -42,8 +38,7 @@
                             </div>
                         @endif
                     </div>
-                    <button class="add-to-cart" data-product-id="{{ $product->ProductID }}"
-                        data-name="{{ e($product->ProductName) }}" data-price="{{ $product->CurrentPrice }}">
+                    <button class="add-to-cart" data-product-id="{{ $product->ProductID }}" data-name="{{ e($product->ProductName) }}" data-price="{{ $product->CurrentPrice }}">
                         <i class="fas fa-shopping-cart"></i> <span>THÊM VÀO GIỎ</span>
                     </button>
                 </div>

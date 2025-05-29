@@ -2,9 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Category;
 use App\Models\Product;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 
 class ProductController extends Controller
 {
@@ -34,131 +36,97 @@ class ProductController extends Controller
     public function search(Request $request)
     {
         $keyword = trim($request->query('search', ''));
-        $searchResults = $keyword ? Product::searchByKeyword($keyword) : [];
+        $searchResults = $keyword ? Product::searchWithDiscount($keyword) : [];
 
         return response()->json($searchResults);
     }
 
+    // ProductController.php
     public function filterHome(Request $request)
     {
-        $filter = $request->input('filter');
-
-        $query = Product::with('discounts');
-
-        if ($filter === 'price-asc') {
-            $query->orderBy('Price', 'asc');
-        } elseif ($filter === 'price-desc') {
-            $query->orderBy('Price', 'desc');
+        try {
+            $filter = $request->input('filter');
+            $products = Product::getFilteredProducts(null, $filter);
+            return view('partials.product-list', compact('products'))->render();
+        } catch (\Exception $e) {
+            Log::error('ProductController::filterHome failed: ' . $e->getMessage());
+            return response()->json(['error' => 'Server error occurred'], 500);
         }
-
-        $products = $query->get();
-
-        $currentDate = now();
-
-        // Tính lại CurrentPrice cho từng product
-        $products->each(function ($product) use ($currentDate) {
-            $discount = $product->discounts->firstWhere(function ($discount) use ($currentDate) {
-                return $discount->StartDate <= $currentDate && $discount->EndDate >= $currentDate;
-            });
-
-            $product->CurrentPrice = $discount
-                ? $product->Price * (1 - $discount->DiscountPercentage / 100)
-                : $product->Price;
-
-            $product->DiscountPercentage = $discount ? $discount->DiscountPercentage : null;
-        });
-
-        return view('partials.product-list', compact('products'))->render();
     }
 
     public function index(Request $request)
     {
-        $sort = $request->input('sort');
+        try {
+            $sort = $request->input('sort');
+            $category = $request->input('category');
 
-        $currentDate = now();
-
-        // Hàm để lấy query sản phẩm theo category và sắp xếp giá
-        $getProductsByCategory = function ($category) use ($sort, $currentDate) {
-            $query = Product::with('discounts')->where('Category', $category);
-
-            if ($sort === 'price_asc') {
-                $query->orderBy('Price', 'asc');
-            } elseif ($sort === 'price_desc') {
-                $query->orderBy('Price', 'desc');
-            } else {
-                $query->orderBy('ProductName', 'asc');
+            if ($request->ajax() && $category) {
+                $products = Product::getFilteredProducts($category, $sort);
+                return response()->json([
+                    'html' => view('partials.product-list', compact('products'))->render(),
+                ]);
             }
 
-            $products = $query->paginate(12)->withQueryString();
+            $macProducts = Product::getFilteredProducts('Mac', $sort);
+            $iphoneProducts = Product::getFilteredProducts('iPhone', $sort);
+            $watchProducts = Product::getFilteredProducts('Watch', $sort);
+            $airpodsProducts = Product::getFilteredProducts('AirPods', $sort);
+            $products = Product::getFilteredProducts(null, $sort);
 
-            // Tính CurrentPrice và DiscountPercentage cho từng sản phẩm trong trang
-            $products->getCollection()->transform(function ($product) use ($currentDate) {
-                $discount = $product->discounts->firstWhere(function ($discount) use ($currentDate) {
-                    return $discount->StartDate <= $currentDate && $discount->EndDate >= $currentDate;
-                });
+            if ($request->ajax()) {
+                return response()->json([
+                    'html' => view('partials.product-list', compact('products'))->render(),
+                ]);
+            }
 
-                $product->CurrentPrice = $discount
-                    ? $product->Price * (1 - $discount->DiscountPercentage / 100)
-                    : $product->Price;
-
-                $product->DiscountPercentage = $discount ? $discount->DiscountPercentage : null;
-
-                return $product;
-            });
-
-            return $products;
-        };
-
-        // Lấy dữ liệu 4 nhóm sản phẩm
-        $macProducts = $getProductsByCategory('Mac');
-        $iphoneProducts = $getProductsByCategory('iPhone');
-        $watchProducts = $getProductsByCategory('Watch');
-        $airpodsProducts = $getProductsByCategory('AirPods');
-
-        return view('products.index', compact('macProducts', 'iphoneProducts', 'watchProducts', 'airpodsProducts'));
+            return view('products.index', compact('macProducts', 'iphoneProducts', 'watchProducts', 'airpodsProducts', 'products'));
+        } catch (\Exception $e) {
+            Log::error('ProductController::index failed: ' . $e->getMessage());
+            if ($request->ajax()) {
+                return response()->json(['error' => 'Server error occurred'], 500);
+            }
+            throw $e;
+        }
     }
 
+    // ProductController.php
     public function filterProductsAjax(Request $request)
     {
-        $sort = $request->input('sort');
-        $category = $request->input('category');
+        try {
+            $sort = $request->input('sort');
+            $category = $request->input('category');
+            $page = $request->input('page', 1);
 
-        $currentDate = now();
+            // Chỉ kiểm tra danh mục nếu không phải 'all'
+            if ($category && $category !== 'all' && !Category::findByName($category)) {
+                Log::warning('Invalid category', ['category' => $category]);
+                return response()->json([
+                    'html' => view('partials.product-list', ['products' => collect([])])->render(),
+                    'pagination' => '',
+                ], 200);
+            }
 
-        $query = Product::with('discounts');
+            $products = Product::getFilteredProducts($category, $sort, $page);
 
-        if ($category) {
-            // Lọc theo tên category thông qua quan hệ
-            $query->whereHas('category', function ($q) use ($category) {
-                $q->where('CategoryName', $category);
-            });
+            Log::info('ProductController::filterProductsAjax', [
+                'category' => $category,
+                'sort' => $sort,
+                'page' => $page,
+                'product_count' => $products->count()
+            ]);
+
+            return response()->json([
+                'html' => view('partials.product-list', compact('products'))->render(),
+                'pagination' => $products->links('pagination::bootstrap-5')->toHtml(),
+            ], 200);
+        } catch (\Exception $e) {
+            Log::error('ProductController::filterProductsAjax failed', [
+                'error' => $e->getMessage(),
+                'category' => $category,
+                'sort' => $sort,
+                'page' => $page
+            ]);
+            return response()->json(['error' => 'Server error occurred: ' . $e->getMessage()], 500);
         }
-
-        if ($sort === 'price_asc' || $sort === 'price-asc') {
-            $query->orderBy('Price', 'asc');
-        } elseif ($sort === 'price_desc' || $sort === 'price-desc') {
-            $query->orderBy('Price', 'desc');
-        } else {
-            $query->orderBy('ProductName', 'asc');
-        }
-
-        $products = $query->paginate(12);
-
-        $products->getCollection()->transform(function ($product) use ($currentDate) {
-            $discount = $product->discounts->firstWhere(function ($discount) use ($currentDate) {
-                return $discount->StartDate <= $currentDate && $discount->EndDate >= $currentDate;
-            });
-
-            $product->CurrentPrice = $discount
-                ? $product->Price * (1 - $discount->DiscountPercentage / 100)
-                : $product->Price;
-
-            $product->DiscountPercentage = $discount ? $discount->DiscountPercentage : null;
-
-            return $product;
-        });
-
-        return view('partials.product-list', compact('products'))->render();
     }
-
 }

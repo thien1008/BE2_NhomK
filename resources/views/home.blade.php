@@ -2,15 +2,13 @@
 
 @push('head')
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css"
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
         crossorigin="anonymous" referrerpolicy="no-referrer" />
+
     <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@400;500;600&family=Roboto:wght@400;500;700&display=swap"
         rel="stylesheet">
 
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
-    <div class="hero-section scroll-reveal" style="margin-top: -230px;">
-        <link rel="preload" href="{{ asset('../img/banner1.avif') }}" as="image">
     </div>
 
     <script>
@@ -45,19 +43,17 @@
 
         <div class="header-slogan">
             <div class="slogan-item">
-                {{-- <img src="{{ asset('../img/header1.webp') }}" alt="Chất lượng" class="slogan-icon" width="20" height="20"
-                    loading="lazy" /> --}}
-                <img src="{{ asset('img/header1.webp') }}" alt="Chất lượng" class="slogan-icon" width="20" height="20"
-                    loading="lazy" />
+                <img src="{{ asset('resources/img/header1.webp') }}" alt="Chất lượng" class="slogan-icon" width="20"
+                    height="20" loading="lazy" />
                 <span>Chất lượng đảm bảo</span>
             </div>
             <div class="slogan-item">
-                <img src="{{ asset('../img/header2.webp') }}" alt="Vận chuyển" class="slogan-icon" width="20" height="20"
-                    loading="lazy" />
+                <img src="{{ asset('resources/img/header2.webp') }}" alt="Vận chuyển" class="slogan-icon" width="20"
+                    height="20" loading="lazy" />
                 <span>Vận chuyển siêu tốc</span>
             </div>
             <div class="slogan-item">
-                <img src="{{ asset('../img/header3.webp') }}" alt="Tư vấn" class="slogan-icon" width="20" height="20"
+                <img src="{{ asset('resources/img/header3.webp') }}" alt="Tư vấn" class="slogan-icon" width="20" height="20"
                     loading="lazy" />
                 <span>Tư vấn Hotline: 0346638136</span>
             </div>
@@ -122,8 +118,8 @@
                                 <span id="cart-total-price">0₫</span>
                             </div>
                             <div class="cart-dropdown-buttons">
-                                <a href="cart.php" class="cart-dropdown-button view-cart-btn">Xem giỏ hàng</a>
-                                <a href="checkout.php" class="cart-dropdown-button checkout-btn">Thanh toán</a>
+                                <a href="/cart" class="cart-dropdown-button view-cart-btn">Xem giỏ hàng</a>
+                                <a href="/checkout" class="cart-dropdown-button checkout-btn">Thanh toán</a>
                             </div>
                         </div>
                     </div>
@@ -150,7 +146,6 @@
             @endguest
         </nav>
     </header>
-    <div class="dropdown-overlay"></div>
 
     @if (session('success'))
         <div class="alert alert-success">
@@ -162,7 +157,8 @@
     <section class="hero-section">
         <div class="container">
             <div class="content hero-banner">
-                <img src="{{ asset('../img/banner1.avif') }}" alt="Hero banner" loading="eager" width="1200" height="400">
+                <img src="{{ asset('../img/product-banner.jpg') }}" alt="Hero banner" loading="eager" width="1200"
+                    height="400">
                 <div class="banner-overlay">
                     <h1 class="banner-title">Khám phá công nghệ mới</h1>
                     <p class="banner-subtitle">Sản phẩm chính hãng với giá tốt nhất thị trường</p>
@@ -194,12 +190,18 @@
                 TẤT CẢ SẢN PHẨM
                 <span class="icon">🔥</span>
             </div>
+
+            <div class="navigation-buttons">
+                <button class="nav-button prev" aria-label="Cuộn trái"><i class="fas fa-chevron-left"></i></button>
+                <button class="nav-button next" aria-label="Cuộn phải"><i class="fas fa-chevron-right"></i></button>
+            </div>
+
             <div id="product-list" class="products-slider" role="list">
                 @include('partials.product-list', ['products' => $products])
             </div>
 
-            <div class="pagination">
-                {{ $products->appends(['sort' => request()->query('sort')])->links() }}
+            <div class="pagination-container" data-category="all" data-container-id="product-list">
+                {!! $products->appends(['sort' => request('sort')])->links('pagination::bootstrap-5') !!}
             </div>
         </div>
     </section>
@@ -213,14 +215,18 @@
                 <span class="icon">🔥</span>
             </div>
 
-            <!-- Sort form -->
+            <div class="navigation-buttons">
+                <button class="nav-button prev" aria-label="Cuộn trái"><i class="fas fa-chevron-left"></i></button>
+                <button class="nav-button next" aria-label="Cuộn phải"><i class="fas fa-chevron-right"></i></button>
+            </div>
+
             <form method="GET" action="javascript:void(0)" class="sort-form" aria-label="Sắp xếp sản phẩm Mac">
                 <label for="sort-price-mac">Sắp xếp theo giá:</label>
                 <select id="sort-price-mac" name="sort" class="sort-select" data-category="Mac">
                     <option value="" {{ request('sort') == '' ? 'selected' : '' }}>Mặc định</option>
-                    <option value="price_asc" {{ request('sort') == 'price_asc' ? 'selected' : '' }}>Giá: Thấp đến cao
+                    <option value="price-asc" {{ request('sort') == 'price-asc' ? 'selected' : '' }}>Giá: Thấp đến cao
                     </option>
-                    <option value="price_desc" {{ request('sort') == 'price_desc' ? 'selected' : '' }}>Giá: Cao đến thấp
+                    <option value="price-desc" {{ request('sort') == 'price-desc' ? 'selected' : '' }}>Giá: Cao đến thấp
                     </option>
                 </select>
                 <noscript><button type="submit">Sắp xếp</button></noscript>
@@ -232,8 +238,8 @@
                 <div id="mac-product-list" class="products-slider" role="list">
                     @include('partials.product-list', ['products' => $macProducts])
                 </div>
-                <div class="pagination">
-                    {{ $macProducts->appends(request()->except('page'))->links() }}
+                <div class="pagination-container" data-category="Mac" data-container-id="mac-product-list">
+                    {!! $macProducts->appends(['sort' => request('sort')])->links('pagination::bootstrap-5') !!}
                 </div>
             @endif
         </div>
@@ -248,13 +254,18 @@
                 <span class="icon">🔥</span>
             </div>
 
+            <div class="navigation-buttons">
+                <button class="nav-button prev" aria-label="Cuộn trái"><i class="fas fa-chevron-left"></i></button>
+                <button class="nav-button next" aria-label="Cuộn phải"><i class="fas fa-chevron-right"></i></button>
+            </div>
+
             <form method="GET" action="javascript:void(0)" class="sort-form" aria-label="Sắp xếp sản phẩm iPhone">
                 <label for="sort-price-iphone">Sắp xếp theo giá:</label>
                 <select id="sort-price-iphone" name="sort" class="sort-select" data-category="iPhone">
                     <option value="" {{ request('sort') == '' ? 'selected' : '' }}>Mặc định</option>
-                    <option value="price_asc" {{ request('sort') == 'price_asc' ? 'selected' : '' }}>Giá: Thấp đến cao
+                    <option value="price-asc" {{ request('sort') == 'price-asc' ? 'selected' : '' }}>Giá: Thấp đến cao
                     </option>
-                    <option value="price_desc" {{ request('sort') == 'price_desc' ? 'selected' : '' }}>Giá: Cao đến thấp
+                    <option value="price-desc" {{ request('sort') == 'price-desc' ? 'selected' : '' }}>Giá: Cao đến thấp
                     </option>
                 </select>
                 <noscript><button type="submit">Sắp xếp</button></noscript>
@@ -266,8 +277,8 @@
                 <div id="iphone-product-list" class="products-slider" role="list">
                     @include('partials.product-list', ['products' => $iphoneProducts])
                 </div>
-                <div class="pagination">
-                    {{ $iphoneProducts->appends(request()->except('page'))->links() }}
+                <div class="pagination-container" data-category="iPhone" data-container-id="iphone-product-list">
+                    {!! $iphoneProducts->appends(['sort' => request('sort')])->links('pagination::bootstrap-5') !!}
                 </div>
             @endif
         </div>
@@ -282,13 +293,18 @@
                 <span class="icon">🔥</span>
             </div>
 
+            <div class="navigation-buttons">
+                <button class="nav-button prev" aria-label="Cuộn trái"><i class="fas fa-chevron-left"></i></button>
+                <button class="nav-button next" aria-label="Cuộn phải"><i class="fas fa-chevron-right"></i></button>
+            </div>
+
             <form method="GET" action="javascript:void(0)" class="sort-form" aria-label="Sắp xếp sản phẩm Watch">
                 <label for="sort-price-watch">Sắp xếp theo giá:</label>
                 <select id="sort-price-watch" name="sort" class="sort-select" data-category="Watch">
                     <option value="" {{ request('sort') == '' ? 'selected' : '' }}>Mặc định</option>
-                    <option value="price_asc" {{ request('sort') == 'price_asc' ? 'selected' : '' }}>Giá: Thấp đến cao
+                    <option value="price-asc" {{ request('sort') == 'price-asc' ? 'selected' : '' }}>Giá: Thấp đến cao
                     </option>
-                    <option value="price_desc" {{ request('sort') == 'price_desc' ? 'selected' : '' }}>Giá: Cao đến thấp
+                    <option value="price-desc" {{ request('sort') == 'price-desc' ? 'selected' : '' }}>Giá: Cao đến thấp
                     </option>
                 </select>
                 <noscript><button type="submit">Sắp xếp</button></noscript>
@@ -300,8 +316,8 @@
                 <div id="watch-product-list" class="products-slider" role="list">
                     @include('partials.product-list', ['products' => $watchProducts])
                 </div>
-                <div class="pagination">
-                    {{ $watchProducts->appends(request()->except('page'))->links() }}
+                <div class="pagination-container" data-category="Watch" data-container-id="watch-product-list">
+                    {!! $watchProducts->appends(['sort' => request('sort')])->links('pagination::bootstrap-5') !!}
                 </div>
             @endif
         </div>
@@ -316,13 +332,18 @@
                 <span class="icon">🔥</span>
             </div>
 
+            <div class="navigation-buttons">
+                <button class="nav-button prev" aria-label="Cuộn trái"><i class="fas fa-chevron-left"></i></button>
+                <button class="nav-button next" aria-label="Cuộn phải"><i class="fas fa-chevron-right"></i></button>
+            </div>
+
             <form method="GET" action="javascript:void(0)" class="sort-form" aria-label="Sắp xếp sản phẩm AirPods">
                 <label for="sort-price-airpods">Sắp xếp theo giá:</label>
                 <select id="sort-price-airpods" name="sort" class="sort-select" data-category="AirPods">
                     <option value="" {{ request('sort') == '' ? 'selected' : '' }}>Mặc định</option>
-                    <option value="price_asc" {{ request('sort') == 'price_asc' ? 'selected' : '' }}>Giá: Thấp đến cao
+                    <option value="price-asc" {{ request('sort') == 'price-asc' ? 'selected' : '' }}>Giá: Thấp đến cao
                     </option>
-                    <option value="price_desc" {{ request('sort') == 'price_desc' ? 'selected' : '' }}>Giá: Cao đến thấp
+                    <option value="price-desc" {{ request('sort') == 'price-desc' ? 'selected' : '' }}>Giá: Cao đến thấp
                     </option>
                 </select>
                 <noscript><button type="submit">Sắp xếp</button></noscript>
@@ -334,8 +355,8 @@
                 <div id="airpods-product-list" class="products-slider" role="list">
                     @include('partials.product-list', ['products' => $airpodsProducts])
                 </div>
-                <div class="pagination">
-                    {{ $airpodsProducts->appends(request()->except('page'))->links() }}
+                <div class="pagination-container" data-category="AirPods" data-container-id="airpods-product-list">
+                    {!! $airpodsProducts->appends(['sort' => request('sort')])->links('pagination::bootstrap-5') !!}
                 </div>
             @endif
         </div>
@@ -475,47 +496,4 @@
             </div>
         </div>
     </div>
-
-    <script>
-        function applyFilter() {
-            const filterValue = document.getElementById('price-filter').value;
-
-            fetch(`/home/filter-products?filter=${filterValue}`)
-                .then(response => response.text())
-                .then(html => {
-                    document.getElementById('product-list').innerHTML = html;
-                })
-                .catch(error => {
-                    console.error('Lỗi khi lọc sản phẩm:', error);
-                    alert('Không thể lọc sản phẩm. Vui lòng thử lại sau.');
-                });
-        }
-
-        document.querySelectorAll('select[name="sort"][data-category]').forEach(select => {
-            select.addEventListener('change', function () {
-                const category = this.dataset.category; // vd: "iPhone"
-                const sort = this.value;
-
-                // Sửa lại cho đúng id container
-                const containerId = category.toLowerCase() + '-product-list';
-                const container = document.getElementById(containerId);
-
-                if (!container) return;
-
-                fetch(`/products/filter?category=${encodeURIComponent(category)}&sort=${encodeURIComponent(sort)}`, {
-                    headers: {
-                        'X-Requested-With': 'XMLHttpRequest'
-                    }
-                })
-                    .then(response => response.text())
-                    .then(html => {
-                        container.innerHTML = html;
-                    })
-                    .catch(err => {
-                        console.error('Lỗi tải sản phẩm:', err);
-                    });
-            });
-        });
-    </script>
-
 @endsection

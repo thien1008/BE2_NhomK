@@ -60,7 +60,6 @@ class AuthController extends Controller
                 'UserType' => 'Regular',
             ]);
 
-             Toastr::success('Đăng ký thành công!', 'Thông báo');
         } catch (\Exception $e) {
             \Log::error('Error creating user: ' . $e->getMessage());
             if ($request->ajax()) {

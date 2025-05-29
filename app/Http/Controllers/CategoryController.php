@@ -11,19 +11,22 @@ class CategoryController extends Controller
 {
     public function show($category, Request $request)
     {
-        // Validate category
-        $categoryModel = Category::where('CategoryName', $category)->first();
+        Log::info('CategoryController::show called', ['category' => $category, 'isAjax' => $request->ajax()]);
+
+        $categoryModel = Category::findByName($category);
         if (!$categoryModel) {
+            Log::warning('Category not found', ['category' => $category]);
             return response()->view('errors.404', ['message' => 'Danh mục không tồn tại.'], 404);
         }
 
         $sort = $request->query('sort', '');
-        $products = Product::getByCategoryWithDiscount($category, $sort, 10);
+        $page = $request->query('page', 1);
+        $products = Product::getFilteredProducts($category, $sort, $page);
 
         if ($request->ajax()) {
             return response()->json([
-                'products' => $products->items(),
-                'pagination' => $products->links()->toHtml(),
+                'html' => view('partials.product-list', compact('products'))->render(),
+                'pagination' => $products->links('pagination::bootstrap-5')->toHtml(),
             ]);
         }
 
@@ -33,10 +36,10 @@ class CategoryController extends Controller
         $categoriesFromDB = Product::getCategoriesForDropdown();
 
         return view('home', [
-            'macProducts' => $category === 'Mac' ? $products : Product::getByCategoryWithDiscount('Mac', '', 10),
-            'iphoneProducts' => $category === 'iPhone' ? $products : Product::getByCategoryWithDiscount('iPhone', '', 10),
-            'watchProducts' => $category === 'Watch' ? $products : Product::getByCategoryWithDiscount('Watch', '', 10),
-            'airpodsProducts' => $category === 'AirPods' ? $products : Product::getByCategoryWithDiscount('AirPods', '', 10),
+            'macProducts' => $category === 'Mac' ? $products : Product::getFilteredProducts('Mac', ''),
+            'iphoneProducts' => $category === 'iPhone' ? $products : Product::getFilteredProducts('iPhone', ''),
+            'watchProducts' => $category === 'Watch' ? $products : Product::getFilteredProducts('Watch', ''),
+            'airpodsProducts' => $category === 'AirPods' ? $products : Product::getFilteredProducts('AirPods', ''),
             'categoriesFromDB' => $categoriesFromDB,
             'isLoggedIn' => $isLoggedIn,
             'username' => $username,

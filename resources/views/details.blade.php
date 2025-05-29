@@ -2,16 +2,14 @@
 
 @push('head')
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css"
-        crossorigin="anonymous" referrerpolicy="no-referrer" />
-    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@400;500;600&family=Roboto:wght@400;500;700&display=swap"
-        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@400;500;600&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
         window.isLoggedIn = @json($isLoggedIn);
         window.categoriesFromDB = @json($categoriesFromDB);
     </script>
-    @vite(['resources/css/styles-ctsp.css', 'resources/js/scripts-ctsp.js', 'resources/js/cart-shared.js'])
+    @vite(['resources/js/utils.js', 'resources/js/scripts-ctsp.js', 'resources/js/cart-shared.js', 'resources/css/styles-ctsp.css'])
 @endpush
 
 @section('content')
@@ -135,75 +133,94 @@
         </div>
     </header>
 
-
     <!-- Product Details Section -->
     <section class="product-details-section">
         <div class="container">
-            <div class="product-details">
-                <div class="product-main">
-                    <div class="product-image-gallery">
-                        <div class="main-image">
-                            <img src="{{ asset('images/' . $product->ImageURL) }}" alt="{{ e($product->ProductName) }}"
-                                loading="lazy" width="400" height="400">
+            <div class="product-main">
+                <!-- Product Image Gallery -->
+                <div class="product-image-gallery">
+                    <div class="main-image">
+                        <img src="{{ asset('images/' . $product->ImageURL) }}" alt="{{ e($product->ProductName) }}"
+                            loading="lazy" width="400" height="400">
+                    </div>
+                </div>
+
+                <!-- Product Content -->
+                <div class="product-content">
+                    <h1>{{ e($product->ProductName) }}</h1>
+                    
+                    <div class="product-meta">
+                        <div class="stock-status {{ $product->Stock > 0 ? 'in-stock' : 'out-of-stock' }}">
+                            <i class="fas fa-check-circle"></i>
+                            {{ $product->Stock > 0 ? 'Còn hàng' : 'Hết hàng' }}
+                        </div>
+                        
+                        <div class="price-container">
+                            <span class="current-price">{{ number_format($product->CurrentPrice, 0, ',', '.') }}₫</span>
+                            @if ($product->DiscountPercentage)
+                                <div class="price-details">
+                                    <span class="original-price">{{ number_format($product->Price, 0, ',', '.') }}₫</span>
+                                    <span class="discount-badge">-{{ number_format($product->DiscountPercentage, 0) }}%</span>
+                                </div>
+                            @endif
                         </div>
                     </div>
-                    <div class="product-content">
-                        <h1>{{ e($product->ProductName) }}</h1>
-                        <div class="product-meta">
-                            <p class="stock-status">
-                                Tình trạng: <span
-                                    class="{{ $product->Stock > 0 ? 'in-stock' : 'out-of-stock' }}">{{ $product->Stock > 0 ? 'Còn hàng' : 'Hết hàng' }}</span>
-                            </p>
-                            <div class="price-container">
-                                <span class="current-price">{{ number_format($product->CurrentPrice, 0, ',', '.') }}₫</span>
-                                @if ($product->DiscountPercentage)
-                                    <div>
-                                        <span class="original-price">{{ number_format($product->Price, 0, ',', '.') }}₫</span>
-                                        <span
-                                            class="discount-badge">-{{ number_format($product->DiscountPercentage, 0) }}%</span>
-                                    </div>
-                                @endif
-                            </div>
-                        </div>
-                        <form class="product-form" id="add-to-cart-form" action="/cart/add" method="POST">
-                            @csrf
-                            <input type="hidden" name="product_id" value="{{ $product->ProductID }}">
-                            <div class="quantity-control">
-                                <label for="quantity">Số lượng:</label>
-                                <div class="quantity-input">
-                                    <button type="button" class="quantity-btn decrease" data-id="{{ $product->ProductID }}"
-                                        aria-label="Giảm số lượng">-</button>
-                                    <input type="number" id="quantity" name="quantity" value="1" min="1"
-                                        max="{{ $product->Stock }}" data-id="{{ $product->ProductID }}"
-                                        aria-label="Số lượng sản phẩm" required>
-                                    <button type="button" class="quantity-btn increase" data-id="{{ $product->ProductID }}"
-                                        aria-label="Tăng số lượng">+</button>
+
+                    <!-- Kiểm tra stock -->
+                    <div style="color: red; font-weight: bold; margin-bottom: 15px;">Stock: {{ $product->Stock }}</div>
+
+                    <form class="product-form" id="add-to-cart-form" action="/cart/add" method="POST">
+                        @csrf
+                        <input type="hidden" name="product_id" value="{{ $product->ProductID }}">
+                        <div class="quantity-section">
+                            <label class="quantity-label">Chọn số lượng:</label>
+                            <div class="quantity-wrapper">
+                                <div class="quantity-control">
+                                    <button type="button" class="quantity-btn decrease" data-id="{{ $product->ProductID }}" aria-label="Giảm số lượng">
+                                        <i class="fas fa-minus"></i>
+                                    </button>
+                                    <input type="number" class="quantity-input" id="quantity" name="quantity" value="1" min="1" max="{{ $product->Stock }}" data-id="{{ $product->ProductID }}" aria-label="Số lượng sản phẩm" required>
+                                    <button type="button" class="quantity-btn increase" data-id="{{ $product->ProductID }}" aria-label="Tăng số lượng">
+                                        <i class="fas fa-plus"></i>
+                                    </button>
+                                </div>
+                                <div class="stock-info">
+                                    <span>Còn lại: <strong>{{ $product->Stock }} sản phẩm</strong></span>
                                 </div>
                             </div>
-                            <div class="product-actions">
-                                <button type="submit" class="add-to-cart" data-product-id="{{ $product->ProductID }}"
-                                    data-name="{{ e($product->ProductName) }}" data-price="{{ $product->CurrentPrice }}" {{ $product->Stock <= 0 ? 'disabled' : '' }}>
-                                    <i class="fas fa-shopping-cart"></i> Thêm vào giỏ
-                                </button>
-                                <a href="/checkout" class="buy-now" {{ $product->Stock <= 0 ? 'aria-disabled="true"' : '' }}>Mua ngay</a>
-                            </div>
-                        </form>
-                        <div class="product-policies">
-                            <h3>Chính sách bán hàng</h3>
-                            <ul>
-                                <li><i class="fas fa-check"></i> Cam kết 100% chính hãng</li>
-                                <li><i class="fas fa-check"></i> Hỗ trợ 24/7</li>
-                                <li><i class="fas fa-check"></i> Hoàn tiền 111% nếu hàng giả</li>
-                                <li><i class="fas fa-check"></i> Mở hộp kiểm tra nhận hàng</li>
-                                <li><i class="fas fa-check"></i> Đổi trả trong 7 ngày</li>
-                            </ul>
                         </div>
+
+                        <div class="product-actions">
+                            <button type="submit" class="action-btn add-to-cart" data-product-id="{{ $product->ProductID }}"
+                                    data-name="{{ e($product->ProductName) }}" data-price="{{ $product->CurrentPrice }}"
+                                    {{ $product->Stock <= 0 ? 'disabled' : '' }}>
+                                <i class="fas fa-shopping-cart"></i>
+                                <span>Thêm vào giỏ</span>
+                            </button>
+                            <button type="button" class="action-btn buy-now" onclick="buyNow('{{ $product->ProductID }}')"
+                                    {{ $product->Stock <= 0 ? 'disabled' : '' }}>
+                                <i class="fas fa-bolt"></i>
+                                <span>Mua ngay</span>
+                            </button>
+                        </div>
+                    </form>
+
+                    <div class="product-policies">
+                        <h3>Chính sách bán hàng</h3>
+                        <ul>
+                            <li><i class="fas fa-shield-alt"></i> Cam kết 100% chính hãng</li>
+                            <li><i class="fas fa-headset"></i> Hỗ trợ 24/7</li>
+                            <li><i class="fas fa-money-bill-wave"></i> Hoàn tiền 111% nếu hàng giả</li>
+                            <li><i class="fas fa-box-open"></i> Mở hộp kiểm tra nhận hàng</li>
+                            <li><i class="fas fa-sync-alt"></i> Đổi trả trong 7 ngày</li>
+                        </ul>
                     </div>
                 </div>
-                <div class="product-description">
-                    <h3>Mô tả sản phẩm</h3>
-                    <p>{!! $product->Description ?? 'Không có mô tả.' !!}</p>
-                </div>
+            </div>
+
+            <div class="product-description">
+                <h3>Mô tả sản phẩm</h3>
+                <p>{!! $product->Description ?? 'Không có mô tả.' !!}</p>
             </div>
         </div>
     </section>
@@ -219,7 +236,7 @@
                             data-product-id="{{ $related->ProductID }}">
                             <div class="product-image">
                                 <img src="{{ asset('images/' . $related->ImageURL) }}" alt="{{ e($related->ProductName) }}"
-                                    loading="lazy" width="200" height="200">
+                                    loading="lazy" width="170" height="180">
                                 @if($related->DiscountPercentage)
                                     <span class="product-badge">Sale!</span>
                                 @endif
@@ -244,7 +261,7 @@
                                     <i class="fas fa-star-half-alt"></i>
                                 </div>
                                 <div class="price-container">
-                                    <span class="current-price">{{ number_format($related->CurrentPrice, 0, ',', '.') }}₫</span>
+                                    <span class="current-price">{{ number_format($related->Price, 0, ',', '.') }}₫</span>
                                     @if($related->DiscountPercentage)
                                         <div>
                                             <span class="original-price">{{ number_format($related->Price, 0, ',', '.') }}₫</span>
@@ -253,7 +270,7 @@
                                     @endif
                                 </div>
                                 <button class="add-to-cart" data-product-id="{{ $related->ProductID }}"
-                                    data-name="{{ e($related->ProductName) }}" data-price="{{ $related->CurrentPrice }}">
+                                    data-name="{{ e($related->ProductName) }}" data-price="{{ $related->Price }}">
                                     <i class="fas fa-shopping-cart"></i> Thêm vào giỏ
                                 </button>
                             </div>
