@@ -414,8 +414,9 @@
                     <h2>Đăng ký nhận tin</h2>
                     <p>Nhận thông tin về sản phẩm mới và khuyến mãi đặc biệt</p>
                 </div>
-                <form class="newsletter-form">
-                    <input type="email" placeholder="Nhập email của bạn" required>
+                <form class="newsletter-form" id="newsletter-form" action="{{ route('newsletter.subscribe') }}" method="POST">
+                    @csrf
+                    <input type="email" name="email" placeholder="Nhập email của bạn" required>
                     <button type="submit">Đăng ký</button>
                 </form>
             </div>
@@ -496,4 +497,94 @@
             </div>
         </div>
     </div>
+
+    <script>
+
+        // Existing scripts unchanged
+
+        document.getElementById('newsletter-form').addEventListener('submit', function (e) {
+            e.preventDefault();
+            const form = this;
+            const email = form.querySelector('input[name="email"]').value;
+            const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
+
+            fetch(form.action, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': csrfToken,
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: JSON.stringify({ email: email })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Success',
+                        text: data.success,
+                        confirmButtonText: 'OK'
+                    });
+                    form.reset();
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: data.error || 'An error occurred. Please try again.',
+                        confirmButtonText: 'OK'
+                    });
+                }
+            })
+            .catch(error => {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'An error occurred while subscribing. Please try again later.',
+                    confirmButtonText: 'OK'
+                });
+            });
+        });
+
+        function applyFilter() {
+            const filterValue = document.getElementById('price-filter').value;
+
+            fetch(`/home/filter-products?filter=${filterValue}`)
+                .then(response => response.text())
+                .then(html => {
+                    document.getElementById('product-list').innerHTML = html;
+                })
+                .catch(error => {
+                    console.error('Lỗi khi lọc sản phẩm:', error);
+                    alert('Không thể lọc sản phẩm. Vui lòng thử lại sau.');
+                });
+        }
+
+        document.querySelectorAll('select[name="sort"][data-category]').forEach(select => {
+            select.addEventListener('change', function () {
+                const category = this.dataset.category; // vd: "iPhone"
+                const sort = this.value;
+
+                // Sửa lại cho đúng id container
+                const containerId = category.toLowerCase() + '-product-list';
+                const container = document.getElementById(containerId);
+
+                if (!container) return;
+
+                fetch(`/products/filter?category=${encodeURIComponent(category)}&sort=${encodeURIComponent(sort)}`, {
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                })
+                    .then(response => response.text())
+                    .then(html => {
+                        container.innerHTML = html;
+                    })
+                    .catch(err => {
+                        console.error('Lỗi tải sản phẩm:', err);
+                    });
+            });
+        });
+    </script>
+
 @endsection

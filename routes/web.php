@@ -22,13 +22,18 @@ use Illuminate\Support\Facades\Route;
 
 // Public Routes
 Route::get('/', [HomeController::class, 'index'])->name('home');
-Route::get('/home', [HomeController::class, 'index'])->name('home.redirect'); // Optional redirect to home
 Route::get('/product/{id}', [ProductController::class, 'show'])->name('product.show');
 Route::get('/products/search', [ProductController::class, 'search'])->name('product.search');
-Route::get('/home/filter-products', [ProductController::class, 'filterHome'])->name('home.filter-products');
-Route::get('/products/filter', [ProductController::class, 'filterProductsAjax'])->name('products.filter');
+Route::get('/products/all', [HomeController::class, 'index'])->name('products.all');
 Route::get('/category/{category}', [CategoryController::class, 'show'])->name('category.show');
+// gửi bản tin
+Route::post('/newsletter/subscribe', [HomeController::class, 'subscribeNewsletter'])->name('newsletter.subscribe');
 
+Route::get('/order/details/{order_id}', [CheckoutController::class, 'showOrderDetails'])->name('order.details');
+
+Route::middleware(['web', 'auth'])->group(function () {
+    Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');
+});
 // Authentication Routes
 Route::get('/login-register', [AuthController::class, 'showLoginRegisterForm'])->name('login-register');
 Route::post('/register', [AuthController::class, 'register'])->name('register');

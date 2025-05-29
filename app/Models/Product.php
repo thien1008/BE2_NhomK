@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\Cache;
 class Product extends Model
 {
     protected $primaryKey = 'ProductID';
-    protected $fillable = ['ProductName', 'Price', 'OriginalPrice', 'ImageURL', 'Stock', 'Color', 'Memory', 'CategoryID', 'Description', 'CreatedAt'];
+    protected $fillable = ['ProductName', 'Price', 'ImageURL', 'Stock', 'CategoryID', 'Description', 'version'];
     public $timestamps = false;
 
     public function discounts()

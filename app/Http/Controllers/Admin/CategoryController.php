@@ -5,7 +5,9 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Category;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 
 class CategoryController extends Controller
 {
@@ -13,6 +15,7 @@ class CategoryController extends Controller
     {
         $search = $request->query('search', '');
         $categories = Category::where('CategoryName', 'like', "%{$search}%")
+            ->orderBy('created_at', 'desc')
             ->paginate(10);
 
         return view('admin.categories.index', compact('categories', 'search'));
@@ -20,32 +23,74 @@ class CategoryController extends Controller
 
     public function store(Request $request)
     {
-        $request->validate([
-            'CategoryName' => 'required|string|max:255',
-            'Description' => 'nullable|string',
-        ]);
+        try {
+            $validated = $request->validate([
+                'CategoryName' => 'required|string|max:255|unique:categories,CategoryName',
+                'Description' => 'nullable|string',
+            ]);
 
-        Category::create($request->only(['CategoryName', 'Description']));
+            Category::create(array_merge($validated, ['version' => 1]));
 
-        return redirect()->route('admin.categories.index')->with('success', 'Category created successfully.');
+            return response()->json(['success' => 'Danh mục đã được tạo thành công.'], 200);
+        } catch (ValidationException $e) {
+            return response()->json(['errors' => $e->errors()], 422);
+        } catch (\Exception $e) {
+            Log::error('Error creating category: ' . $e->getMessage());
+            return response()->json(['error' => 'Đã xảy ra lỗi khi tạo danh mục.'], 500);
+        }
     }
 
-    public function update(Request $request, Category $category)
+    public function update(Request $request, $id)
     {
-        $request->validate([
-            'CategoryName' => 'required|string|max:255',
-            'Description' => 'nullable|string',
-        ]);
+        try {
+            $category = Category::find($id);
+            if (!$category) {
+                return response()->json(['error' => 'Danh mục không tồn tại.'], 404);
+            }
 
-        $category->update($request->only(['CategoryName', 'Description']));
+            $validated = $request->validate([
+                'CategoryName' => [
+                    'required',
+                    'string',
+                    'max:255',
+                    Rule::unique('categories', 'CategoryName')->ignore($id, 'CategoryID'),
+                ],
+                'Description' => 'nullable|string',
+                'version' => 'required|integer|min:1',
+            ]);
 
-        return redirect()->route('admin.categories.index')->with('success', 'Category updated successfully.');
+            if ($category->version != $request->version) {
+                return response()->json(['error' => 'Dữ liệu danh mục đã được thay đổi bởi người khác. Vui lòng làm mới trang và thử lại.'], 409);
+            }
+
+            $category->update(array_merge(
+                $validated,
+                ['version' => $category->version + 1]
+            ));
+
+            return response()->json(['success' => 'Danh mục đã được cập nhật thành công.'], 200);
+        } catch (ValidationException $e) {
+            return response()->json(['errors' => $e->errors()], 422);
+        } catch (\Exception $e) {
+            Log::error('Error updating category: ' . $e->getMessage());
+            return response()->json(['error' => 'Đã xảy ra lỗi khi cập nhật danh mục.'], 500);
+        }
     }
 
-    public function destroy(Category $category)
+    public function destroy($id)
     {
-        $category->delete();
+        try {
+            $category = Category::find($id);
+            if (!$category) {
+                return response()->json(['error' => 'Danh mục không tồn tại.'], 404);
+            }
 
-        return redirect()->route('admin.categories.index')->with('success', 'Category deleted successfully.');
+            $category->delete();
+
+            return response()->json(['success' => 'Danh mục đã được xóa thành công.'], 200);
+        } catch (\Exception $e) {
+            Log::error('Error deleting category: ' . $e->getMessage());
+            return response()->json(['error' => 'Đã xảy ra lỗi khi xóa danh mục.'], 500);
+        }
     }
 }

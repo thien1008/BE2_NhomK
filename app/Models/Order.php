@@ -16,17 +16,13 @@ class Order extends Model
         'UserID',
         'TotalPrice',
         'Status',
+        'version',
     ];
 
     public function items()
     {
-        return $this->hasMany(OrderDetail::class, 'OrderID', 'OrderID'); // Change to OrderDetail
+        return $this->hasMany(OrderDetail::class, 'OrderID', 'OrderID');
     }
-
-    // public function user()
-    // {
-    //     return $this->belongsTo(User::class);
-    // }
 
     public function user()
     {
@@ -39,6 +35,7 @@ class Order extends Model
             'UserID' => $data['UserID'],
             'TotalPrice' => $data['total'],
             'Status' => 'Pending',
+            'version' => 1,
         ]);
     }
 
