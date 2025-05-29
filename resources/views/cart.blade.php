@@ -19,8 +19,8 @@
 
     @vite([
         'resources/css/styles-cart.css',
+        'resources/js/cart-shared.js',
         'resources/js/scripts-cart.js',
-        'resources/js/cart-shared.js'
     ])
 @endpush
 
